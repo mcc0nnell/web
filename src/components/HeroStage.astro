@@ -1,0 +1,36 @@
+---
+const { hero } = Astro.props;
+const useVideo = false; // set true if you add public/hero.mp4
+---
+
+<section class="stage" aria-label="Hero">
+  <div class="atmo" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  {useVideo && (
+    <video
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+      style="position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;opacity:.22;filter:saturate(.8) contrast(1.05);"
+    >
+      <source src="/hero.mp4" type="video/mp4" />
+    </video>
+  )}
+
+  <div class="chrome">
+    <div class="brand">mcc0nnell.org</div>
+    <button class="menuBtn" type="button" id="openMenu">Menu</button>
+  </div>
+
+  <div class="hero">
+    <div class="heroInner">
+      <h1 class="h1">{hero.headline}</h1>
+      <div class="sub">{hero.subheadline}</div>
+      <div class="tag">{hero.line}</div>
+      <div class="scrollHint"><b>Scroll</b> for signal</div>
+    </div>
+  </div>
+</section>

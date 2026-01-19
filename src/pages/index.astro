@@ -1,0 +1,69 @@
+---
+import '../styles/global.css';
+import HeroStage from '../components/HeroStage.astro';
+import MenuOverlay from '../components/MenuOverlay.astro';
+import site from '../content/site.json';
+
+const intro = site.intro.join('\n');
+const status = site.status.join('\n');
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{site.name}</title>
+    <meta name="description" content={`${site.descriptor}. ${site.tagline}`} />
+    <meta name="theme-color" content="#060606" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={site.name} />
+    <meta property="og:description" content={site.tagline} />
+    <meta property="og:type" content="website" />
+
+    <!-- Minimal favicons (drop your own in /public) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23060606'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='%2300ff66' font-family='monospace'>0</text></svg>" />
+  </head>
+
+  <body>
+    <HeroStage hero={site.hero} />
+    <MenuOverlay links={site.links} />
+
+    <main class="page">
+      <div class="inner">
+        <p class="p" style="white-space: pre-wrap;">{intro}</p>
+
+        <section class="block" id="signals">
+          <h2 class="label">Signals</h2>
+          <ul class="list">
+            {site.signals.map((s) => <li>{s}</li>)}
+          </ul>
+        </section>
+
+        <section class="block" id="status">
+          <h2 class="label">Status</h2>
+          <p class="p" style="white-space: pre-wrap;">{status}</p>
+        </section>
+
+        <section class="block" id="work">
+          <h2 class="label">{site.work.title}</h2>
+          <ul class="list">
+            {site.work.items.map((w) => <li>{w}</li>)}
+          </ul>
+          <div class="note">{site.work.note}</div>
+        </section>
+
+        <div class="quote">{site.closing}</div>
+
+        <nav class="links" aria-label="Links">
+          {site.links.map((l) => (
+            <a class="pill" href={l.href}>{l.label}</a>
+          ))}
+        </nav>
+
+        <div class="footer">{site.footer}</div>
+      </div>
+    </main>
+  </body>
+</html>

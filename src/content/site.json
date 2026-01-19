@@ -1,0 +1,47 @@
+{
+  "name": "ROBERT MCCONNELL",
+  "descriptor": "Ambient systems · Deaf-first infrastructure",
+  "tagline": "Designing communication that disappears into place.",
+  "hero": {
+    "headline": "ROBERT MCCONNELL",
+    "subheadline": "Ambient systems · Deaf-first infrastructure",
+    "line": "Communication that disappears into the room."
+  },
+  "intro": [
+    "I work with systems the way a DJ works with rooms—",
+    "selection, timing, flow.",
+    "",
+    "Real-time communication and accessibility infrastructure,",
+    "built to hold without demanding attention."
+  ],
+  "signals": [
+    "Low-friction interfaces",
+    "Stable real-time layers",
+    "Deaf-first by default",
+    "Works before it’s noticed"
+  ],
+  "status": [
+    "Working across cities, networks, and layers.",
+    "Sometimes public. Often not.",
+    "",
+    "The interface is not the system.",
+    "The room is."
+  ],
+  "work": {
+    "title": "Selected Work",
+    "items": [
+      "Ambient captioning",
+      "Real-time communication systems",
+      "Accessibility infrastructure",
+      "Policy-adjacent technical work"
+    ],
+    "note": "Details on request."
+  },
+  "closing": "If it works, you won’t notice it.",
+  "links": [
+    { "label": "Email", "href": "mailto:hi@mcc0nnell.org" },
+    { "label": "GitHub", "href": "https://github.com/" },
+    { "label": "Signal", "href": "#" }
+  ],
+  "footer": "In session."
+}
