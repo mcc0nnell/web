@@ -328,3 +328,142 @@ a:hover { text-decoration: underline; }
   letter-spacing: 0.10em;
   margin-left: 10px;
 }
+
+/* ===============================
+   CRT BOOT UP (ONE-TIME)
+   =============================== */
+
+body.crt.crt-boot::before,
+body.crt.crt-boot::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  /* keep existing CRT overlays intact if present;
+     do not remove prior definitions */
+}
+
+/* Boot overlay layer (extra) */
+body.crt.crt-boot {
+  position: relative;
+  /* helps ensure pseudo overlays stack cleanly */
+}
+
+body.crt.crt-boot > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.crt.crt-boot::marker { content: ""; } /* no-op; keep CSS valid in some linters */
+
+/* Use a dedicated boot pseudo-element via background trick on ::after
+   without requiring extra markup:
+   We'll layer 2 additional gradients and animate them once. */
+body.crt.crt-boot::after {
+  /* If body.crt::after already exists, extend it by adding these layers
+     at the END of the background list so they sit “on top” of existing noise/band. */
+  background-image:
+    radial-gradient(circle at center, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.0) 55%, rgba(255,255,255,0.0) 100%),
+    linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.85) 50%, rgba(255,255,255,0) 100%),
+    linear-gradient(to bottom, rgba(255,255,255,0) 48%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0) 52%);
+
+  /* sizes for the new layers (match count to layers you added) */
+  background-size:
+    100% 100%,     /* flash vignette */
+    100% 22%,      /* sweep band */
+    100% 100%;     /* collapse line */
+
+  background-position:
+    0 0,
+    0 -60%,
+    0 0;
+
+  animation:
+    crt-boot-flash 900ms ease-out 1,
+    crt-boot-sweep 900ms ease-out 1,
+    crt-boot-collapse 900ms ease-in-out 1;
+
+  animation-fill-mode: both;
+}
+
+/* Boot flash: brief bright pop that fades */
+@keyframes crt-boot-flash {
+  0%   { filter: brightness(1.0) contrast(1.0); }
+  8%   { filter: brightness(2.2) contrast(1.1); }
+  18%  { filter: brightness(1.35) contrast(1.05); }
+  100% { filter: brightness(1.0) contrast(1.0); }
+}
+
+/* Sweep: bright band moves down once */
+@keyframes crt-boot-sweep {
+  0%   { background-position: 0 0, 0 -60%, 0 0; opacity: 0.0; }
+  10%  { opacity: 0.30; }
+  100% { background-position: 0 0, 0 160%, 0 0; opacity: 0.18; }
+}
+
+/* Collapse: “turn on” line—scale Y down then back up */
+@keyframes crt-boot-collapse {
+  0%   { transform: scaleY(0.2); }
+  15%  { transform: scaleY(0.02); }
+  35%  { transform: scaleY(0.02); }
+  100% { transform: scaleY(1.0); }
+}
+
+/* After boot, stop the one-time layers from being visually dominant.
+   We can't remove the class without JS, so fade their contribution. */
+body.crt.crt-boot::after {
+  /* ensure the boot layers are subtle after completion */
+  opacity: 0.12;
+}
+
+/* Reduced motion: disable boot */
+@media (prefers-reduced-motion: reduce) {
+  body.crt.crt-boot::after {
+    animation: none !important;
+    filter: none !important;
+  }
+}
+
+/* ===============================
+   CRT SCANLINES (PERSISTENT)
+   =============================== */
+
+body.crt {
+  background: #070807;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Keep site content above overlays */
+body.crt main {
+  position: relative;
+  z-index: 1;
+}
+
+/* Scanlines + vignette overlay */
+body.crt::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.025) 0px,
+      rgba(255,255,255,0.025) 1px,
+      rgba(0,0,0,0.02) 2px,
+      rgba(0,0,0,0.02) 4px
+    ),
+    radial-gradient(
+      ellipse at center,
+      rgba(0,0,0,0) 45%,
+      rgba(0,0,0,0.45) 100%
+    );
+
+  mix-blend-mode: overlay;
+  opacity: 0.75;
+}
