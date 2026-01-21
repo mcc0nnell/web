@@ -424,3 +424,46 @@ body.crt.crt-boot::after {
     filter: none !important;
   }
 }
+
+/* ===============================
+   CRT SCANLINES (PERSISTENT)
+   =============================== */
+
+body.crt {
+  background: #070807;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Keep site content above overlays */
+body.crt main {
+  position: relative;
+  z-index: 1;
+}
+
+/* Scanlines + vignette overlay */
+body.crt::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.025) 0px,
+      rgba(255,255,255,0.025) 1px,
+      rgba(0,0,0,0.02) 2px,
+      rgba(0,0,0,0.02) 4px
+    ),
+    radial-gradient(
+      ellipse at center,
+      rgba(0,0,0,0) 45%,
+      rgba(0,0,0,0.45) 100%
+    );
+
+  mix-blend-mode: overlay;
+  opacity: 0.75;
+}
