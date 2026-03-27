@@ -4,8 +4,8 @@ export const content = {
   board: {
     rows: 8,
     cols: 30,
-    railTop: 'SF26 LOBBY * CIVIC TECH SUMMIT * SAN FRANCISCO',
-    railBottom: 'A=AUTOPLAY * O=HUD * M=MUTE * F=FULLSCREEN',
+    railTop: 'SF26 LOBBY • CIVIC TECH SUMMIT • SAN FRANCISCO',
+    railBottom: 'A=AUTOPLAY • O=HUD • M=MUTE • F=FULLSCREEN',
     defaultPlaylist: 'main',
     reducedMotionDwellBoostMs: 900,
   },
@@ -17,9 +17,8 @@ export const content = {
   quickKeys: {
     1: { playlist: 'main' },
     2: { playlist: 'preShow' },
-    3: { playlist: 'alerts' },
+    3: { scene: 'alertCapacity' },
     4: { scene: 'roomchange' },
-    5: { scene: 'nownext' },
   },
   scenes: {
     welcome: {
@@ -27,7 +26,6 @@ export const content = {
       name: 'Welcome',
       dwellMs: 7000,
       visualMode: 'accent',
-      rails: { top: 'SF26 MAIN LOBBY', bottom: 'DOORS OPEN * SESSION TRACKS LIVE' },
       payload: {
         headline: 'WELCOME TO SF26',
         subline: 'CIVIC TECH + ACCESSIBILITY',
@@ -37,17 +35,15 @@ export const content = {
       type: SCENE_TYPES.HERO,
       name: 'Opening Ceremony',
       dwellMs: 6500,
-      rails: { top: 'GRAND HALL', bottom: 'OPENING CEREMONY * 7:00 PM' },
       payload: {
         headline: 'OPENING CEREMONY',
-        subline: '7:00 PM * GRAND HALL',
+        subline: '7:00 PM • GRAND HALL',
       },
     },
     nownext: {
       type: SCENE_TYPES.NOW_NEXT,
       name: 'Now / Next',
       dwellMs: 7000,
-      rails: { top: 'PROGRAM FLOW', bottom: 'LIVE SCHEDULE BOARD' },
       payload: {
         now: 'COR SESSION',
         next: 'DIG AFTER DARK',
@@ -57,7 +53,6 @@ export const content = {
       type: SCENE_TYPES.ROOM,
       name: 'Room Change',
       dwellMs: 7000,
-      visualMode: 'accent',
       payload: {
         title: 'ROOM CHANGE',
         room: 'CONTINENTAL 6',
@@ -90,7 +85,7 @@ export const content = {
       dwellMs: 7000,
       payload: {
         title: 'WAYFINDING',
-        direction: 'WORKSHOPS > PIER NORTH',
+        direction: 'WORKSHOPS → PIER NORTH',
         detail: 'BADGE CHECK AT ENTRY',
       },
     },
@@ -99,11 +94,10 @@ export const content = {
       name: 'Capacity Alert',
       dwellMs: 6000,
       visualMode: 'warn',
-      rails: { top: 'VENUE OPERATIONS ALERT', bottom: 'FOLLOW STAFF DIRECTION' },
       payload: {
         title: 'ALERT',
         message: 'GRAND HALL AT CAPACITY',
-        detail: 'USE OVERFLOW * MARKET EAST',
+        detail: 'USE OVERFLOW • MARKET EAST',
       },
     },
   },

@@ -37,7 +37,6 @@ Update:
 - `content.scenes` for scene text and dwell time
 - `content.playlists` for sequence order
 - `content.quickKeys` for number-key scene/playlist jumps
-- Optional per-scene rails via `scene.rails.top` / `scene.rails.bottom`
 
 ## Operator controls
 
@@ -49,17 +48,6 @@ Update:
 - **R**: restart current playlist
 - **1–9**: jump via saved quick keys
 - **O**: toggle operator HUD
-
-## Optional content sources (upgrade path)
-
-By default, content loads from `js/content.js`.
-
-You can also load external content without changing render code:
-
-- `?source=localStorage` (reads `sf26.flipboard.content`)
-- `?data=https://example.com/scenes.json` (fetches remote JSON)
-
-External payloads are merged onto the built-in defaults.
 
 ## Kiosk/browser deployment
 
@@ -74,3 +62,13 @@ Recommended:
 Upload the `sf26-flipboard/` directory to any static host (Cloudflare Pages, GitHub Pages, Netlify, S3 static hosting, etc.).
 
 No build step is needed.
+
+## Upgrade path (optional)
+
+Current content source is `js/content.js`. The scene engine is intentionally separated so a future adapter can load scene data from:
+- JSON file
+- query params
+- `localStorage`
+- remote endpoint
+
+without changing board rendering logic.

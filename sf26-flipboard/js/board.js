@@ -1,14 +1,8 @@
-import { CHARACTER_SET, REPLACEMENTS } from './constants.js';
+import { CHARACTER_SET } from './constants.js';
 
 function sanitizeChar(character) {
-  const raw = `${character || ' '}`;
-  const normalized = REPLACEMENTS[raw] || raw;
-  const upper = normalized.toUpperCase();
+  const upper = (character || ' ').toUpperCase();
   return CHARACTER_SET.includes(upper) ? upper : ' ';
-}
-
-function sanitizeText(text = '') {
-  return `${text}`.split('').map((char) => sanitizeChar(char)).join('');
 }
 
 class Tile {
@@ -78,7 +72,7 @@ export class SplitFlapBoard {
     let changed = 0;
 
     for (let r = 0; r < this.rows; r += 1) {
-      const line = sanitizeText(lines[r] || '').padEnd(this.cols, ' ').slice(0, this.cols);
+      const line = (lines[r] || '').padEnd(this.cols, ' ').slice(0, this.cols);
       for (let c = 0; c < this.cols; c += 1) {
         const tile = this.tiles[r][c];
         tile.setStyle(style);
@@ -91,11 +85,11 @@ export class SplitFlapBoard {
 }
 
 export function center(text, width) {
-  const clipped = sanitizeText(text || '').slice(0, width);
+  const clipped = (text || '').toUpperCase().slice(0, width);
   const leftPad = Math.max(0, Math.floor((width - clipped.length) / 2));
   return `${' '.repeat(leftPad)}${clipped}`.padEnd(width, ' ');
 }
 
 export function left(text, width) {
-  return sanitizeText(text || '').slice(0, width).padEnd(width, ' ');
+  return (text || '').toUpperCase().slice(0, width).padEnd(width, ' ');
 }

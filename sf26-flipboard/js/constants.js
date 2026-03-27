@@ -1,13 +1,4 @@
-export const CHARACTER_SET = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:.,-/'&!?+*=><()[]";
-
-export const REPLACEMENTS = {
-  '•': '*',
-  '→': '>',
-  '←': '<',
-  '“': '"',
-  '”': '"',
-  '’': "'",
-};
+export const CHARACTER_SET = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:.,-/'&!?+";
 
 export const SCENE_TYPES = {
   HERO: 'hero',
