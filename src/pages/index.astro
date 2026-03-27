@@ -54,12 +54,22 @@ const status = site.status.join('\n');
           <div class="note">{site.work.note}</div>
         </section>
 
+        <section class="block" id="events">
+          <h2 class="label">Events</h2>
+          <ul class="list">
+            {site.events.map((e) => (
+              <li><a href={e.href} style="display:flex;justify-content:space-between;align-items:baseline;color:inherit;">{e.label}<span style="font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:0.10em;">{e.detail}</span></a></li>
+            ))}
+          </ul>
+        </section>
+
         <div class="quote">{site.closing}</div>
 
         <nav class="links" aria-label="Links">
           {site.links.map((l) => (
             <a class="pill" href={l.href}>{l.label}</a>
           ))}
+          <a class="pill" href="/sf26">SF26</a>
         </nav>
 
         <div class="footer">{site.footer}</div>
