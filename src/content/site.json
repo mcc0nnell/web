@@ -37,10 +37,7 @@
     ],
     "note": "Details on request."
   },
-  "events": [
-    { "label": "SF26 · Civic Tech Summit", "href": "/sf26", "detail": "Jun 2026" }
-  ],
-  "closing": "If it works, you won’t notice it.",
+"closing": "If it works, you won’t notice it.",
   "links": [
     { "label": "Email", "href": "mailto:hi@mcc0nnell.org" },
     { "label": "GitHub", "href": "https://github.com/" },

@@ -54,13 +54,17 @@ const status = site.status.join('\n');
           <div class="note">{site.work.note}</div>
         </section>
 
-        <section class="block" id="events">
-          <h2 class="label">Events</h2>
+        <section class="block" id="sf26">
+          <h2 class="label">SF26 · Civic Tech Summit</h2>
           <ul class="list">
-            {site.events.map((e) => (
-              <li><a href={e.href} style="display:flex;justify-content:space-between;align-items:baseline;color:inherit;">{e.label}<span style="font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:0.10em;">{e.detail}</span></a></li>
-            ))}
+            <li>June 20, 2026 · 7:00 PM · Grand Hall · San Francisco</li>
+            <li>Opening Ceremony · COR Session · DIG After Dark</li>
+            <li>Workshops · Pier North</li>
           </ul>
+          <div class="note">Sponsors: Civic Cloud · TransitLab · Open Signal</div>
+          <nav class="links" aria-label="SF26 links" style="margin-top:14px;">
+            <a class="pill" href="/sf26/flipboard/">Flipboard &rarr;</a>
+          </nav>
         </section>
 
         <div class="quote">{site.closing}</div>
@@ -69,7 +73,6 @@ const status = site.status.join('\n');
           {site.links.map((l) => (
             <a class="pill" href={l.href}>{l.label}</a>
           ))}
-          <a class="pill" href="/sf26">SF26</a>
         </nav>
 
         <div class="footer">{site.footer}</div>
