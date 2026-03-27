@@ -1,0 +1,95 @@
+---
+import '../styles/global.css';
+import HeroStage from '../components/HeroStage.astro';
+import MenuOverlay from '../components/MenuOverlay.astro';
+import site from '../content/site.json';
+
+const hero = {
+  headline: 'SF26',
+  subheadline: 'Civic Tech Summit · San Francisco',
+  line: 'June 20, 2026 · Grand Hall',
+};
+
+const links = [
+  ...site.links,
+  { label: 'Flipboard', href: '/sf26/flipboard/' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SF26 · Civic Tech Summit</title>
+    <meta name="description" content="SF26 Civic Tech Summit — San Francisco, June 20 2026. Civic technology, accessibility infrastructure, and real-time communication." />
+    <meta name="theme-color" content="#060606" />
+
+    <meta property="og:title" content="SF26 · Civic Tech Summit" />
+    <meta property="og:description" content="San Francisco · June 20, 2026" />
+    <meta property="og:type" content="website" />
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23060606'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='%2300ff66' font-family='monospace'>S</text></svg>" />
+  </head>
+
+  <body class="crt crt-boot">
+    <HeroStage hero={hero} />
+    <MenuOverlay links={links} />
+
+    <main class="page">
+      <div class="inner">
+
+        <p class="p" style="white-space: pre-wrap;">SF26 brings together civic technologists, accessibility practitioners, and real-time communication infrastructure builders.
+
+One day. One room. No fluff.</p>
+
+        <section class="block" id="details">
+          <h2 class="label">Details</h2>
+          <ul class="list">
+            <li>June 20, 2026 · 7:00 PM</li>
+            <li>Grand Hall · San Francisco</li>
+            <li>Civic Tech + Accessibility</li>
+          </ul>
+        </section>
+
+        <section class="block" id="program">
+          <h2 class="label">Program</h2>
+          <ul class="list">
+            <li>Opening Ceremony · 7:00 PM · Grand Hall</li>
+            <li>COR Session</li>
+            <li>DIG After Dark</li>
+            <li>Workshops · Pier North</li>
+          </ul>
+        </section>
+
+        <section class="block" id="sponsors">
+          <h2 class="label">Sponsors</h2>
+          <ul class="list">
+            <li>Civic Cloud</li>
+            <li>TransitLab</li>
+            <li>Open Signal</li>
+          </ul>
+        </section>
+
+        <section class="block" id="signage">
+          <h2 class="label">Venue Signage</h2>
+          <p class="p" style="font-size:15px;">The split-flap board runs live during the event — wayfinding, schedule, and alerts in real time.</p>
+          <nav class="links" style="margin-top:14px;" aria-label="Signage">
+            <a class="pill" href="/sf26/flipboard/">Open Flipboard &rarr;</a>
+          </nav>
+        </section>
+
+        <div class="quote">Infrastructure for the room. Built before anyone notices it.</div>
+
+        <nav class="links" aria-label="Links" style="margin-top:18px;">
+          <a class="pill" href="/">← Back</a>
+          <a class="pill" href="mailto:hi@mcc0nnell.org">Contact</a>
+          <a class="pill" href="/sf26/flipboard/">Flipboard</a>
+        </nav>
+
+        <div class="footer">SF26 · {site.footer}</div>
+
+      </div>
+    </main>
+  </body>
+</html>
