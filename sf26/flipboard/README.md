@@ -9,10 +9,10 @@ SF26 FlipBoard is a static, browser-native split-flap signage engine for confere
 
 ## Local use
 
-Open `sf26-flipboard/index.html` directly in a browser, or serve with any static server:
+Open `sf26/flipboard/index.html` directly in a browser, or serve with any static server:
 
 ```bash
-cd sf26-flipboard
+cd sf26/flipboard
 python3 -m http.server 8080
 ```
 
@@ -59,7 +59,7 @@ Recommended:
 
 ## Static hosting deployment
 
-Upload the `sf26-flipboard/` directory to any static host (Cloudflare Pages, GitHub Pages, Netlify, S3 static hosting, etc.).
+Upload the `sf26/flipboard/` directory to any static host (Cloudflare Pages, GitHub Pages, Netlify, S3 static hosting, etc.).
 
 No build step is needed.
 
