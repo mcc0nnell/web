@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SF26 FlipBoard</title>
+    <meta name="description" content="SF26 event-ready split-flap signage system." />
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="meta-rail" id="top-rail"></header>
+
+      <main class="board-shell" aria-live="polite">
+        <div class="board" id="board" role="img" aria-label="SF26 split-flap event signage"></div>
+      </main>
+
+      <footer class="meta-rail" id="bottom-rail"></footer>
+    </div>
+
+    <aside class="hud hidden" id="operator-hud" aria-hidden="true">
+      <h2>OPERATOR HUD</h2>
+      <dl>
+        <div><dt>Scene</dt><dd id="hud-scene">-</dd></div>
+        <div><dt>Type</dt><dd id="hud-type">-</dd></div>
+        <div><dt>Playlist</dt><dd id="hud-playlist">-</dd></div>
+        <div><dt>Autoplay</dt><dd id="hud-autoplay">Off</dd></div>
+        <div><dt>Muted</dt><dd id="hud-muted">Off</dd></div>
+        <div><dt>Fullscreen</dt><dd id="hud-fullscreen">Off</dd></div>
+      </dl>
+      <p>Space/Enter/→ next • ← previous • A autoplay • R restart • M mute • F fullscreen • O HUD • 1-9 jump</p>
+    </aside>
+
+    <script type="module" src="./js/engine.js"></script>
+  </body>
+</html>
