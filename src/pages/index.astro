@@ -1,11 +1,5 @@
 ---
 import '../styles/global.css';
-import HeroStage from '../components/HeroStage.astro';
-import MenuOverlay from '../components/MenuOverlay.astro';
-import site from '../content/site.json';
-
-const intro = site.intro.join('\n');
-const status = site.status.join('\n');
 ---
 
 <!doctype html>
@@ -13,70 +7,279 @@ const status = site.status.join('\n');
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{site.name}</title>
-    <meta name="description" content={`${site.descriptor}. ${site.tagline}`} />
-    <meta name="theme-color" content="#060606" />
+    <title>Robert McConnell</title>
+    <meta name="description" content="Telecommunications accessibility specialist, infrastructure builder, community leader." />
+    <meta name="theme-color" content="#0F1520" />
 
     <!-- Open Graph -->
-    <meta property="og:title" content={site.name} />
-    <meta property="og:description" content={site.tagline} />
+    <meta property="og:title" content="Robert McConnell" />
+    <meta property="og:description" content="Telecommunications accessibility specialist, infrastructure builder, community leader." />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mcc0nnell.org" />
 
-    <!-- Minimal favicons (drop your own in /public) -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23060606'/><text x='50' y='62' font-size='56' text-anchor='middle' fill='%2300ff66' font-family='monospace'>0</text></svg>" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='16' fill='%231B2333'/><text x='50' y='66' font-size='52' text-anchor='middle' fill='%23DC2626' font-family='Georgia,serif'>M</text></svg>" />
   </head>
 
-  <body class="crt crt-boot">
-    <HeroStage hero={site.hero} />
-    <MenuOverlay links={site.links} />
-
-    <main class="page">
-      <div class="inner">
-        <p class="p" style="white-space: pre-wrap;">{intro}</p>
-
-        <section class="block" id="signals">
-          <h2 class="label">Signals</h2>
-          <ul class="list">
-            {site.signals.map((s) => <li>{s}</li>)}
-          </ul>
-        </section>
-
-        <section class="block" id="status">
-          <h2 class="label">Status</h2>
-          <p class="p" style="white-space: pre-wrap;">{status}</p>
-        </section>
-
-        <section class="block" id="work">
-          <h2 class="label">{site.work.title}</h2>
-          <ul class="list">
-            {site.work.items.map((w) => <li>{w}</li>)}
-          </ul>
-          <div class="note">{site.work.note}</div>
-        </section>
-
-        <section class="block" id="sf26">
-          <h2 class="label">SF26 · Civic Tech Summit</h2>
-          <ul class="list">
-            <li>June 20, 2026 · 7:00 PM · Grand Hall · San Francisco</li>
-            <li>Opening Ceremony · COR Session · DIG After Dark</li>
-            <li>Workshops · Pier North</li>
-          </ul>
-          <div class="note">Sponsors: Civic Cloud · TransitLab · Open Signal</div>
-          <nav class="links" aria-label="SF26 links" style="margin-top:14px;">
-            <a class="pill" href="/sf26/flipboard/">Flipboard &rarr;</a>
-          </nav>
-        </section>
-
-        <div class="quote">{site.closing}</div>
-
-        <nav class="links" aria-label="Links">
-          {site.links.map((l) => (
-            <a class="pill" href={l.href}>{l.label}</a>
-          ))}
-        </nav>
-
-        <div class="footer">{site.footer}</div>
+  <body>
+    <!-- ============ Navigation ============ -->
+    <nav class="nav" id="nav">
+      <div class="nav__inner">
+        <a href="#" class="nav__brand">mcc0nnell.org</a>
+        <button class="nav__toggle" id="navToggle" type="button" aria-label="Toggle menu">Menu</button>
+        <div class="nav__links" id="navLinks">
+          <a href="#work">Work</a>
+          <a href="#writing">Writing</a>
+          <a href="#sf26">SF26</a>
+          <a href="#projects">Projects</a>
+          <a href="#connect">Connect</a>
+        </div>
       </div>
-    </main>
+    </nav>
+
+    <!-- ============ Hero ============ -->
+    <section class="hero" id="top">
+      <div class="hero__bg" aria-hidden="true"></div>
+      <div class="hero__content">
+        <div class="hero__eyebrow reveal">Telecommunications &middot; Accessibility &middot; Infrastructure</div>
+        <h1 class="hero__name reveal">Robert<br /><em>McConnell</em></h1>
+        <p class="hero__tagline reveal">Building the communication infrastructure that disappears into the room. Policy, technology, and community&mdash;by design.</p>
+        <hr class="hero__rule line-draw" />
+      </div>
+      <div class="hero__scroll" aria-hidden="true">Scroll</div>
+    </section>
+
+    <!-- ============ Work ============ -->
+    <section class="section section--border" id="work">
+      <div class="container">
+        <div class="section__header reveal">
+          <div>
+            <span class="label">Selected Work</span>
+            <h2 class="section__title">Building<br />systems that hold</h2>
+          </div>
+          <span class="section__count">01&mdash;04</span>
+        </div>
+
+        <div class="work-grid reveal-stagger">
+          <div class="work-card work-card--featured reveal">
+            <div>
+              <span class="label work-card__label">FCC &middot; Since 2014</span>
+              <h3 class="work-card__title">Telecommunications Relay Services Policy</h3>
+              <p class="work-card__desc">Shaping the regulatory framework that governs how 50+ million Americans with hearing and speech disabilities access telecommunications. Federal policy work at the intersection of technology, civil rights, and infrastructure.</p>
+            </div>
+            <div class="work-card__meta">Telecommunications Accessibility Specialist</div>
+          </div>
+
+          <div class="work-card reveal">
+            <div>
+              <span class="label work-card__label">MITRE &middot; FCC</span>
+              <h3 class="work-card__title">ACE Direct &amp; DVC</h3>
+              <p class="work-card__desc">Co-built accessible communications technology with MITRE&mdash;direct video calling infrastructure for federal agencies.</p>
+            </div>
+            <div class="work-card__meta">Open-source &middot; WebRTC</div>
+          </div>
+
+          <div class="work-card reveal">
+            <div>
+              <span class="label work-card__label">National 501(c)(3)</span>
+              <h3 class="work-card__title">Deaf in Government</h3>
+              <p class="work-card__desc">President of DIG, a national organization spanning 40+ federal agencies. Advocacy, mentorship, and systemic change from inside government.</p>
+            </div>
+            <div class="work-card__meta">deafingov.org</div>
+          </div>
+
+          <div class="work-card reveal">
+            <div>
+              <span class="label work-card__label">Identity</span>
+              <h3 class="work-card__title">Deaf ASL User</h3>
+              <p class="work-card__desc">Gallaudet University Hall of Fame. Academic Bowl record holder. Built my first BBS at age 12. The work is personal because the infrastructure is personal.</p>
+            </div>
+            <div class="work-card__meta">Gallaudet Hall of Fame</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Writing / Thought Leadership ============ -->
+    <section class="section section--border" id="writing">
+      <div class="container">
+        <div class="section__header reveal">
+          <div>
+            <span class="label">Thought Leadership</span>
+            <h2 class="section__title">Accessibility as<br />infrastructure</h2>
+          </div>
+        </div>
+
+        <div class="split split--wide-right reveal">
+          <div class="pull-quote reveal">The interface is not the system. The room is.</div>
+          <div>
+            <div class="writing-item reveal">
+              <div class="writing-item__label">
+                <span class="label">Policy</span>
+              </div>
+              <div class="writing-item__body">
+                <h3 class="writing-item__title">Accessibility isn't a feature</h3>
+                <p class="writing-item__text">When accessibility is treated as a feature, it can be descoped. When it's infrastructure, it's the foundation everything else stands on. The distinction changes how agencies build, procure, and regulate technology.</p>
+              </div>
+            </div>
+
+            <div class="writing-item reveal">
+              <div class="writing-item__label">
+                <span class="label">Technology</span>
+              </div>
+              <div class="writing-item__body">
+                <h3 class="writing-item__title">Real-time communication for everyone</h3>
+                <p class="writing-item__text">Video relay, direct video calling, accessible conferencing&mdash;the systems that make federal communication work for Deaf employees and the public aren't add-ons. They're how government meets its obligation.</p>
+              </div>
+            </div>
+
+            <div class="writing-item reveal">
+              <div class="writing-item__label">
+                <span class="label">Community</span>
+              </div>
+              <div class="writing-item__body">
+                <h3 class="writing-item__title">Leading from inside the system</h3>
+                <p class="writing-item__text">DIG exists because Deaf professionals in government needed infrastructure for each other&mdash;mentorship, advocacy, visibility. Forty agencies. One network. Building power where the decisions get made.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SF26 — Marquee Section ============ -->
+    <section class="sf26 sf26-reveal" id="sf26">
+      <div class="sf26__bg" aria-hidden="true"></div>
+      <div class="sf26__watermark" aria-hidden="true">58</div>
+      <div class="sf26__content">
+        <div class="sf26__eyebrow reveal">National Association of the Deaf</div>
+        <h2 class="sf26__title reveal">
+          58th Biennial<br />
+          <em>Conference</em>
+        </h2>
+        <p class="sf26__subtitle reveal">San Francisco &middot; Late June&ndash;Early July 2026</p>
+
+        <div class="sf26__details reveal-stagger">
+          <div class="sf26__detail-group reveal">
+            <h3>Role</h3>
+            <p><strong>AV / Production Operational Lead</strong><br />End-to-end audiovisual and production operations for the largest gathering of the American Deaf community.</p>
+          </div>
+          <div class="sf26__detail-group reveal">
+            <h3>Scale</h3>
+            <p><strong>National event, thousands of attendees</strong><br />Plenary sessions, workshops, ceremonies, and community gatherings&mdash;all requiring seamless accessible production.</p>
+          </div>
+          <div class="sf26__detail-group reveal">
+            <h3>Why it matters</h3>
+            <p>This isn't a conference. It's where the Deaf community convenes to set direction, celebrate culture, and build power. The production has to match the moment.</p>
+          </div>
+          <div class="sf26__detail-group reveal">
+            <h3>Infrastructure</h3>
+            <p>Multi-venue AV coordination, live ASL production, captioning systems, broadcast-quality video&mdash;built Deaf-first from the ground up.</p>
+          </div>
+        </div>
+
+        <a class="sf26__cta reveal" href="/sf26/flipboard/">
+          SF26 Flipboard <span aria-hidden="true">&rarr;</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ============ Projects ============ -->
+    <section class="section section--border" id="projects">
+      <div class="container">
+        <div class="section__header reveal">
+          <div>
+            <span class="label">Projects</span>
+            <h2 class="section__title">Things I've built</h2>
+          </div>
+        </div>
+
+        <div class="projects-grid reveal-stagger">
+          <a class="project-card reveal" href="https://portal.deafingov.org" target="_blank" rel="noopener noreferrer">
+            <span class="label project-card__label">DIG Portal</span>
+            <h3 class="project-card__title">portal.deafingov.org</h3>
+            <span class="project-card__url">portal.deafingov.org</span>
+            <p class="project-card__desc">Member portal for Deaf in Government&mdash;connecting Deaf professionals across 40+ federal agencies. Resources, events, and community infrastructure.</p>
+          </a>
+
+          <a class="project-card reveal" href="https://github.com/FCC/ACEdirect" target="_blank" rel="noopener noreferrer">
+            <span class="label project-card__label">Open Source</span>
+            <h3 class="project-card__title">ACE Direct</h3>
+            <span class="project-card__url">github.com/FCC/ACEdirect</span>
+            <p class="project-card__desc">Accessible Communications for Everyone&mdash;open-source video and accessibility platform enabling direct communication between the public and government agencies.</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Connect ============ -->
+    <section class="section section--border" id="connect">
+      <div class="container">
+        <div class="section__header reveal">
+          <div>
+            <span class="label">Connect</span>
+            <h2 class="section__title">Let's talk</h2>
+          </div>
+        </div>
+
+        <div class="connect-links reveal-stagger">
+          <a class="connect-link reveal" href="mailto:hi@mcc0nnell.org">Email</a>
+          <a class="connect-link reveal" href="https://www.linkedin.com/in/robert-mcconnell-deaf/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a class="connect-link reveal" href="https://github.com/mcc0nnell" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ Footer ============ -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer__inner">
+          <span class="footer__brand">mcc0nnell.org</span>
+          <span class="footer__note">Built with quiet authority.</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ============ Scripts ============ -->
+    <script>
+      // Nav scroll effect
+      const nav = document.getElementById('nav');
+      const onScroll = () => {
+        nav?.classList.toggle('scrolled', window.scrollY > 60);
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+
+      // Mobile nav toggle
+      const toggle = document.getElementById('navToggle');
+      const links = document.getElementById('navLinks');
+      toggle?.addEventListener('click', () => {
+        links?.classList.toggle('open');
+      });
+
+      // Close mobile nav on link click
+      links?.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => links?.classList.remove('open'));
+      });
+
+      // Scroll reveal with IntersectionObserver
+      const revealEls = document.querySelectorAll('.reveal, .sf26-reveal, .line-draw');
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+      );
+
+      revealEls.forEach((el) => observer.observe(el));
+
+      // Reduced motion: reveal everything immediately
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        revealEls.forEach((el) => el.classList.add('visible'));
+      }
+    </script>
   </body>
 </html>
