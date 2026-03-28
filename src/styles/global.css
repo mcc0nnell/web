@@ -5,8 +5,6 @@
    Type: Instrument Serif / Outfit / IBM Plex Mono
    ========================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
-
 :root {
   /* Palette */
   --midnight: #1B2333;
@@ -35,9 +33,14 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
 body {
+  background-color: #0F1520;
   background: var(--bg);
+  color: #E8ECF1;
   color: var(--fg);
   font-family: var(--sans);
   font-weight: 400;
@@ -114,8 +117,9 @@ ul, ol { list-style: none; }
   color: var(--fg-secondary);
 }
 
+/* Nav links: hidden on mobile, flex on desktop */
 .nav__links {
-  display: flex;
+  display: none;
   gap: 28px;
 }
 
@@ -131,9 +135,9 @@ ul, ol { list-style: none; }
 
 .nav__links a:hover { color: var(--fg); }
 
-/* Mobile nav toggle */
+/* Mobile nav toggle: visible by default */
 .nav__toggle {
-  display: none;
+  display: block;
   background: none;
   border: 1px solid var(--border);
   color: var(--fg-secondary);
@@ -145,21 +149,28 @@ ul, ol { list-style: none; }
   cursor: pointer;
 }
 
-@media (max-width: 768px) {
-  .nav__links { display: none; }
-  .nav__toggle { display: block; }
-  .nav__links.open {
+/* Mobile open state */
+.nav__links.open {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(15, 21, 32, 0.97);
+  backdrop-filter: blur(16px);
+  padding: 20px var(--gap);
+  gap: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Desktop: show links inline, hide toggle */
+@media (min-width: 769px) {
+  .nav__links {
     display: flex;
-    flex-direction: column;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: rgba(15, 21, 32, 0.95);
-    backdrop-filter: blur(16px);
-    padding: 20px var(--gap);
-    gap: 16px;
-    border-bottom: 1px solid var(--border);
+  }
+  .nav__toggle {
+    display: none;
   }
 }
 
