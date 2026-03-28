@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SF26 LIVE — Pre-Conference</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=VT323&family=Comic+Neue:wght@700&family=Outfit:wght@300;700;900&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --win-bg: #C0C0C0; --win-white: #FFFFFF; --win-black: #000000;
+    --win-dark: #808080; --win-blue: #0000C0; --win-blue-fg: #FFFFFF;
+    --font: system-ui, "Microsoft Sans Serif", Tahoma, sans-serif;
+    --font-px: "VT323", monospace;
+    --sf-gold: #D4A853; --sf-glow: #5eead4; --sf-accent: #f472b6; --sf-deep: #0a0e1a;
+  }
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html, body {
+    width:100vw; height:100vh; overflow:hidden;
+    font-family:var(--font); font-size:13px;
+    background:var(--win-bg); color:var(--win-black);
+    cursor:default; user-select:none;
+  }
+
+  /* ═══ WIN 3.1 COMPONENTS ═══ */
+  .w-window { display:flex; flex-direction:column; background:var(--win-bg); border:1px solid var(--win-black); padding:2px; position:absolute; box-shadow:2px 2px 0 rgba(0,0,0,.15); }
+  .w-window.rel { position:relative; }
+  .w-titlebar { display:flex; font-weight:bold; border:1px solid var(--win-black); background:var(--win-blue); color:var(--win-blue-fg); flex-shrink:0; }
+  .w-titlebar.inactive { background:var(--win-white); color:var(--win-black); }
+  .w-titlebar-text { text-align:center; font-weight:bold; padding:2px 4px; flex-grow:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .w-titlebar-btns { flex-shrink:0; display:flex; align-items:stretch; }
+  .w-titlebar-btns .w-btn { width:24px; min-width:0; padding:0; border:0; border-left:1px solid var(--win-black); border-radius:0; background:var(--win-bg); display:flex; align-items:center; justify-content:center; font-size:9px; }
+  .w-menubar { display:flex; background:var(--win-white); border-bottom:1px solid var(--win-black); font-size:12px; }
+  .w-menubar span { padding:1px 8px; }
+  .w-body { flex-grow:1; background:var(--win-white); color:var(--win-black); border:1px solid var(--win-black); border-top:0; }
+  .w-status { display:flex; background:var(--win-white); border:1px solid var(--win-black); border-top:0; font-size:12px; }
+  .w-status span { padding:2px 6px; border-right:1px solid var(--win-black); }
+  .w-status span:last-child { border-right:0; flex-grow:1; }
+  .w-dialog { display:flex; flex-direction:column; background:var(--win-blue); border:1px solid var(--win-black); padding:2px; position:absolute; box-shadow:3px 3px 0 rgba(0,0,0,.2); }
+  .w-dialog.rel { position:relative; }
+  .w-dialog .w-titlebar { border:1px solid var(--win-white); border-bottom-color:var(--win-black); }
+  .w-dialog-body { background:var(--win-bg); border:1px solid var(--win-white); border-top:0; padding:16px 20px; display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center; }
+  .w-button { background:var(--win-bg); color:var(--win-black); border:1px solid var(--win-black); border-radius:2.5px; min-width:70px; padding:2px 8px; box-shadow:inset -1px -1px 0 var(--win-dark),inset 1px 1px 0 var(--win-white),inset -2px -2px 0 var(--win-dark),inset 2px 2px 0 var(--win-white); font-family:var(--font); font-size:13px; }
+  .w-progress-track { width:100%; height:18px; background:var(--win-white); border:1px solid var(--win-black); position:relative; overflow:hidden; }
+  .w-progress-fill { position:absolute; top:0; left:0; bottom:0; background:var(--win-blue); width:0%; transition:width .3s linear; }
+  .desk-icon { display:flex; flex-direction:column; align-items:center; width:80px; gap:4px; }
+  .desk-icon-img { font-size:28px; }
+  .desk-icon-label { font-size:11px; text-align:center; padding:1px 3px; line-height:1.3; }
+
+  /* ═══ SCENES ═══ */
+  #stage { width:100%; height:100%; position:relative; background:var(--win-bg); }
+  .scene { position:absolute; inset:0; opacity:0; transition:opacity .6s; pointer-events:none; display:flex; align-items:center; justify-content:center; }
+  .scene.active { opacity:1; pointer-events:auto; }
+
+  /* 1: COUNTDOWN */
+  #scene-countdown { padding:20px; gap:20px; }
+  .desktop-icons { display:flex; flex-direction:column; gap:16px; padding:10px 4px; }
+  .countdown-window { top:50%; left:50%; transform:translate(-50%,-50%); width:420px; max-width:80vw; }
+  .countdown-body { padding:24px 20px; display:flex; flex-direction:column; align-items:center; gap:12px; background:var(--win-white); }
+  .countdown-label { font-size:13px; color:var(--win-dark); letter-spacing:1px; }
+  .countdown-number { font-family:var(--font-px); font-size:clamp(48px,10vw,80px); color:var(--win-blue); line-height:1; }
+  .countdown-unit { font-size:15px; font-weight:bold; }
+  .countdown-date { font-size:12px; color:var(--win-dark); }
+
+  /* 2: DIALOGS */
+  .dialog-stack .w-dialog { opacity:0; transform:scale(.9); transition:opacity .4s,transform .4s; }
+  .dialog-stack .w-dialog.pop { opacity:1; transform:scale(1); }
+  .dialog-icon { font-size:28px; flex-shrink:0; }
+  .dialog-msg-row { display:flex; align-items:center; text-align:left; gap:10px; }
+  .w-dialog-btns { display:flex; gap:8px; }
+
+  /* 3: INSTALL */
+  .install-window { width:500px; max-width:88vw; }
+  .install-body { padding:20px; background:var(--win-bg); display:flex; flex-direction:column; gap:12px; }
+  .install-filename { font-family:var(--font-px); font-size:16px; height:22px; overflow:hidden; }
+  .install-pct { font-size:12px; color:var(--win-dark); text-align:right; }
+
+  /* 4: PROGRAM MANAGER */
+  .pm-window { width:620px; max-width:92vw; }
+  .pm-body { padding:20px 16px; background:var(--win-white); display:flex; flex-wrap:wrap; gap:8px; justify-content:center; min-height:240px; position:relative; }
+  .pm-icon { width:90px; padding:8px 4px; display:flex; flex-direction:column; align-items:center; gap:6px; transition:background .2s; position:relative; }
+  .pm-icon.highlight { background:var(--win-blue); }
+  .pm-icon.highlight .pm-label { color:var(--win-blue-fg); }
+  .pm-icon-emoji { font-size:32px; }
+  .pm-label { font-size:11px; text-align:center; line-height:1.3; }
+  .pm-info { position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); background:#FFFFCC; border:1px solid var(--win-black); padding:6px 10px; font-size:12px; white-space:nowrap; opacity:0; transition:opacity .3s; pointer-events:none; box-shadow:2px 2px 0 rgba(0,0,0,.12); z-index:10; }
+  .pm-icon.highlight .pm-info { opacity:1; }
+
+  /* 5: WORKSHOPS */
+  .workshop-card { width:520px; max-width:90vw; }
+  .workshop-body { padding:28px 24px; background:var(--win-white); display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center; }
+  .ws-clipart { font-size:56px; }
+  .ws-title { font-size:18px; font-weight:bold; line-height:1.4; }
+  .ws-meta { font-size:12px; color:var(--win-dark); }
+  .ws-divider { width:160px; height:2px; background:linear-gradient(90deg,transparent,#cc9900,#660066,#cc9900,transparent); }
+  .ws-desc { font-size:13px; line-height:1.5; max-width:400px; color:#333; }
+  .ws-card-container .w-window { opacity:0; transform:translateY(12px); transition:opacity .5s,transform .5s; }
+  .ws-card-container .w-window.show { opacity:1; transform:translateY(0); }
+
+  /* 6: NOTEPAD */
+  .notepad-window { width:540px; max-width:90vw; }
+  .notepad-body { padding:16px 20px; background:var(--win-white); min-height:200px; font-family:var(--font-px); font-size:18px; line-height:1.6; white-space:pre-wrap; }
+  .notepad-cursor { display:inline-block; width:2px; height:1.1em; background:var(--win-black); vertical-align:text-bottom; animation:blink .6s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* 7: SPEAKERS */
+  .speaker-body { background:var(--win-bg); border:1px solid var(--win-white); border-top:0; padding:20px 24px; display:flex; gap:16px; align-items:flex-start; }
+  .speaker-avatar { width:64px; height:64px; flex-shrink:0; background:var(--win-white); border:1px solid var(--win-black); display:flex; align-items:center; justify-content:center; font-size:36px; }
+  .speaker-info { display:flex; flex-direction:column; gap:6px; }
+  .speaker-name { font-weight:bold; font-size:15px; }
+  .speaker-role { font-size:12px; color:var(--win-dark); }
+  .speaker-topic { font-size:13px; line-height:1.4; margin-top:4px; }
+  .speaker-btns { display:flex; gap:8px; margin-top:8px; }
+  .speaker-stack .w-dialog { opacity:0; transform:scale(.9); transition:opacity .5s,transform .5s; }
+  .speaker-stack .w-dialog.pop { opacity:1; transform:scale(1); }
+
+  /* 8: SF TIPS */
+  .fm-window { width:560px; max-width:90vw; }
+  .fm-body { padding:8px; background:var(--win-white); display:flex; flex-direction:column; }
+  .fm-row { display:flex; align-items:center; gap:10px; padding:5px 8px; font-size:13px; border-bottom:1px solid #eee; opacity:0; transform:translateX(-10px); transition:opacity .4s,transform .4s; }
+  .fm-row.show { opacity:1; transform:translateX(0); }
+  .fm-row.highlight { background:var(--win-blue); color:var(--win-blue-fg); }
+  .fm-icon { font-size:20px; width:28px; text-align:center; flex-shrink:0; }
+  .fm-name { font-weight:bold; min-width:140px; }
+  .fm-detail { color:var(--win-dark); font-size:12px; flex-grow:1; }
+  .fm-row.highlight .fm-detail { color:rgba(255,255,255,.7); }
+
+  /* ═══════════════════════════════════════
+     9: PHOTO VIEWER
+     ═══════════════════════════════════════ */
+  .pv-window { width:520px; max-width:90vw; }
+  .pv-viewport {
+    background:#1a1a1a; padding:12px;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    min-height:320px; position:relative;
+  }
+  .pv-frame {
+    width:90%; max-width:400px; aspect-ratio:4/3;
+    position:relative; overflow:hidden;
+    border:6px solid #f5f0e6;
+    box-shadow:2px 2px 8px rgba(0,0,0,.5);
+    opacity:0; transform:scale(.95);
+    transition:opacity .8s,transform .8s;
+  }
+  .pv-frame.show { opacity:1; transform:scale(1); }
+  /* CSS-drawn "photos" */
+  .pv-photo {
+    width:100%; height:100%; position:absolute; inset:0;
+  }
+  /* Golden Gate */
+  .pv-photo.golden-gate {
+    background:
+      linear-gradient(180deg, #a8c4d8 0%, #c8dae8 40%, #d4c8a0 55%, #b8a878 60%, #4a6880 60.5%, #3a5870 100%);
+  }
+  .pv-photo.golden-gate::before {
+    content:''; position:absolute;
+    top:30%; left:20%; width:8%; height:35%;
+    background:#cc3300;
+    box-shadow:
+      200% 0 0 0 #cc3300,
+      0 -40% 0 -1% #cc3300,
+      200% -40% 0 -1% #cc3300;
+  }
+  .pv-photo.golden-gate::after {
+    content:''; position:absolute;
+    top:18%; left:22%; width:56%; height:4%;
+    background:#cc3300;
+  }
+  /* Cable car */
+  .pv-photo.cable-car {
+    background: linear-gradient(180deg, #87CEEB 0%, #b0d4e8 50%, #888 50.5%, #777 100%);
+  }
+  .pv-photo.cable-car::before {
+    content:''; position:absolute;
+    bottom:20%; left:30%; width:40%; height:30%;
+    background:#8B0000;
+    border-radius:4px 4px 0 0;
+    border:3px solid #5a0000;
+  }
+  .pv-photo.cable-car::after {
+    content:'CABLE CAR'; position:absolute;
+    bottom:28%; left:35%; width:30%;
+    font-family:var(--font-px); font-size:10px;
+    color:#f5e6cc; text-align:center; letter-spacing:2px;
+  }
+  /* Painted Ladies */
+  .pv-photo.painted-ladies {
+    background: linear-gradient(180deg, #f0c878 0%, #e8a040 30%, #60a040 42%, #408830 55%, #408830 100%);
+  }
+  .pv-photo.painted-ladies::before {
+    content:''; position:absolute;
+    bottom:20%; left:15%;
+    width:18%; height:35%;
+    background:#e8d8c8;
+    border-top:12px solid #a06040;
+    box-shadow:
+      90% 0 0 0 #d8c8b8,
+      90% 0 0 0 #d8c8b8,
+      180% 0 0 0 #c8b8a8;
+  }
+  .pv-photo.painted-ladies::after {
+    content:''; position:absolute;
+    bottom:20%; left:calc(15% + 90% * .18);
+    width:18%; height:35%;
+    background:#d8c8b8;
+    border-top:12px solid #8a5030;
+  }
+  /* Chinatown */
+  .pv-photo.chinatown {
+    background: linear-gradient(180deg, #87CEEB 0%, #aaa 30%, #888 100%);
+  }
+  .pv-photo.chinatown::before {
+    content:''; position:absolute;
+    top:25%; left:30%; width:40%; height:50%;
+    background:#cc2200;
+    border-radius:8px 8px 0 0;
+    border-top:8px solid #ffcc00;
+  }
+  .pv-photo.chinatown::after {
+    content:'唐人街'; position:absolute;
+    top:35%; left:35%; width:30%;
+    font-size:18px; color:#ffcc00;
+    text-align:center; font-weight:bold;
+  }
+  /* Grain overlay */
+  .pv-frame::after {
+    content:''; position:absolute; inset:0;
+    background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+    pointer-events:none;
+    z-index:2;
+  }
+  /* Sepia tint */
+  .pv-frame { filter:sepia(0.35) contrast(1.1) brightness(0.95) saturate(0.7); }
+  .pv-caption {
+    font-family:var(--font-px); font-size:16px;
+    color:#999; letter-spacing:1px;
+    opacity:0; transition:opacity .6s;
+  }
+  .pv-caption.show { opacity:1; }
+  .pv-nav { display:flex; gap:6px; }
+  .pv-nav .w-button { min-width:40px; font-size:12px; }
+  .pv-counter { font-size:11px; color:#666; }
+
+  /* ═══════════════════════════════════════
+     10: PAGEMAKER FLYER
+     ═══════════════════════════════════════ */
+  .pm2-window { width:580px; max-width:92vw; }
+  .pm2-pasteboard {
+    background:#607080;
+    padding:16px;
+    display:flex; align-items:center; justify-content:center;
+    min-height:400px;
+    position:relative;
+  }
+  /* Rulers */
+  .pm2-pasteboard::before {
+    content:''; position:absolute; top:0; left:16px; right:16px; height:14px;
+    background:var(--win-white);
+    border-bottom:1px solid var(--win-black);
+    background-image:repeating-linear-gradient(90deg, var(--win-black) 0px, var(--win-black) 1px, transparent 1px, transparent 40px);
+    background-size:40px 8px; background-repeat:repeat-x;
+    background-position:0 bottom;
+  }
+  .pm2-pasteboard::after {
+    content:''; position:absolute; top:14px; left:0; bottom:0; width:14px;
+    background:var(--win-white);
+    border-right:1px solid var(--win-black);
+    background-image:repeating-linear-gradient(180deg, var(--win-black) 0px, var(--win-black) 1px, transparent 1px, transparent 40px);
+    background-size:8px 40px; background-repeat:repeat-y;
+    background-position:right 0;
+  }
+  .pm2-page {
+    width:320px; max-width:70vw;
+    background:var(--win-white);
+    border:1px solid var(--win-black);
+    box-shadow:3px 3px 0 rgba(0,0,0,.25);
+    padding:20px 18px;
+    display:flex; flex-direction:column;
+    align-items:center; gap:10px;
+    text-align:center;
+    position:relative; z-index:1;
+    margin-top:14px; margin-left:14px;
+  }
+  .pm2-block {
+    opacity:0; transform:translateY(8px);
+    transition:opacity .5s,transform .5s;
+  }
+  .pm2-block.show { opacity:1; transform:translateY(0); }
+  .pm2-logo-text {
+    font-family:'Comic Neue',cursive; font-weight:700;
+    font-size:22px; color:#0000C0;
+    border:2px solid #0000C0; padding:6px 14px;
+    letter-spacing:2px;
+  }
+  .pm2-headline {
+    font-family:'Comic Neue',cursive; font-weight:700;
+    font-size:17px; color:#660066; line-height:1.3;
+  }
+  .pm2-rule { width:80%; height:2px; background:linear-gradient(90deg,transparent,#cc9900,transparent); }
+  .pm2-detail { font-size:12px; line-height:1.5; color:#333; }
+  .pm2-footer { font-size:10px; color:var(--win-dark); letter-spacing:1px; margin-top:4px; }
+  .pm2-clipart { font-size:36px; }
+
+  /* ═══════════════════════════════════════
+     11: SCANNER
+     ═══════════════════════════════════════ */
+  .scan-window { width:520px; max-width:90vw; }
+  .scan-viewport {
+    background:#111; padding:12px;
+    min-height:360px; position:relative;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+  .scan-page {
+    width:88%; max-width:380px; aspect-ratio:11/8.5;
+    background:#f8f4ec;
+    border:1px solid #ccc;
+    position:relative; overflow:hidden;
+    box-shadow:0 0 20px rgba(0,0,0,.4);
+  }
+  /* Blueprint grid */
+  .scan-page::before {
+    content:''; position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(0,80,160,.08) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(0,80,160,.08) 1px,transparent 1px);
+    background-size:20px 20px;
+  }
+  /* Floor plan lines (CSS-drawn) */
+  .bp-outer { position:absolute; top:15%; left:12%; width:76%; height:70%; border:2px solid #2a5a8a; }
+  .bp-room1 { position:absolute; top:0; left:0; width:45%; height:55%; border-right:2px solid #2a5a8a; border-bottom:2px solid #2a5a8a; }
+  .bp-room2 { position:absolute; top:0; right:0; width:55%; height:55%; border-bottom:2px solid #2a5a8a; }
+  .bp-room3 { position:absolute; bottom:0; left:0; width:100%; height:45%; }
+  .bp-door1 { position:absolute; top:55%; left:calc(45% - 12px); width:24px; height:2px; background:#f8f4ec; }
+  .bp-door2 { position:absolute; top:20%; right:-1px; width:2px; height:18px; background:#f8f4ec; }
+  .bp-label { position:absolute; font-family:var(--font-px); font-size:10px; color:#2a5a8a; text-align:center; }
+  .bp-l1 { top:20%; left:10%; }
+  .bp-l2 { top:20%; right:15%; }
+  .bp-l3 { bottom:18%; left:50%; transform:translateX(-50%); }
+  .bp-title { position:absolute; bottom:4%; right:5%; font-family:var(--font-px); font-size:9px; color:#2a5a8a; text-align:right; line-height:1.4; }
+
+  /* Scan light bar */
+  .scan-bar {
+    position:absolute; top:0; left:0; width:100%; height:6px;
+    background:linear-gradient(180deg, rgba(0,200,100,.0), rgba(0,200,100,.4), rgba(0,200,100,.0));
+    box-shadow:0 0 20px rgba(0,200,100,.3);
+    opacity:0;
+    z-index:3;
+  }
+  .scan-bar.active { opacity:1; animation:scanSweep 4s ease-in-out infinite; }
+  @keyframes scanSweep { 0%{top:0} 50%{top:calc(100% - 6px)} 100%{top:0} }
+  /* Reveal mask */
+  .scan-page .bp-outer, .scan-page .bp-room1, .scan-page .bp-room2, .scan-page .bp-room3,
+  .scan-page .bp-door1, .scan-page .bp-door2, .scan-page .bp-label, .scan-page .bp-title {
+    opacity:0; transition:opacity 1.5s;
+  }
+  .scan-page.revealed .bp-outer, .scan-page.revealed .bp-room1, .scan-page.revealed .bp-room2,
+  .scan-page.revealed .bp-room3, .scan-page.revealed .bp-door1, .scan-page.revealed .bp-door2,
+  .scan-page.revealed .bp-label, .scan-page.revealed .bp-title { opacity:1; }
+  .scan-status { font-family:var(--font-px); font-size:14px; color:#0c0; margin-top:8px; opacity:0; transition:opacity .5s; }
+  .scan-status.show { opacity:1; }
+
+  /* ═══════════════════════════════════════
+     12: NETSCAPE NAVIGATOR
+     ═══════════════════════════════════════ */
+  .ns-window { width:600px; max-width:92vw; }
+  .ns-toolbar {
+    background:var(--win-bg); padding:3px 6px;
+    display:flex; align-items:center; gap:6px;
+    border-bottom:1px solid var(--win-black);
+    font-size:12px;
+  }
+  .ns-toolbar .w-button { min-width:50px; font-size:11px; padding:1px 6px; }
+  .ns-address {
+    display:flex; align-items:center; gap:6px;
+    background:var(--win-bg); padding:2px 6px;
+    border-bottom:1px solid var(--win-black);
+    font-size:12px;
+  }
+  .ns-address-label { font-weight:bold; flex-shrink:0; }
+  .ns-address-bar {
+    flex-grow:1; background:var(--win-white);
+    border:1px solid var(--win-black); padding:1px 4px;
+    font-family:var(--font); font-size:12px;
+    overflow:hidden; white-space:nowrap;
+  }
+  .ns-throbber {
+    width:28px; height:28px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px;
+  }
+  .ns-throbber.spinning { animation:spin 1s linear infinite; }
+  @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+  .ns-progress {
+    height:4px; background:var(--win-bg);
+    border-top:1px solid var(--win-dark);
+    overflow:hidden;
+  }
+  .ns-progress-bar { height:100%; background:var(--win-blue); width:0%; transition:width .4s; }
+  .ns-page {
+    background:var(--win-white); padding:16px 20px;
+    min-height:260px;
+    font-family:var(--font); font-size:13px;
+  }
+  .ns-block { opacity:0; transform:translateY(6px); transition:opacity .5s,transform .5s; margin-bottom:10px; }
+  .ns-block.show { opacity:1; transform:translateY(0); }
+  .ns-h1 { font-size:20px; font-weight:bold; color:var(--win-blue); margin-bottom:4px; }
+  .ns-hr { height:3px; background:linear-gradient(90deg,var(--win-blue),var(--win-dark),var(--win-blue)); margin:8px 0; border:0; }
+  .ns-link { color:var(--win-blue); text-decoration:underline; }
+  .ns-img-placeholder {
+    width:180px; height:50px; background:#ddd; border:1px solid #bbb;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; color:#999; margin:6px 0;
+  }
+  .ns-list { margin-left:20px; line-height:1.8; }
+  .ns-status-bar { font-size:11px; color:var(--win-dark); }
+
+  /* ═══ BRANDING ═══ */
+  #brand-strip { position:fixed; bottom:0; left:0; right:0; height:32px; background:var(--sf-deep); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:50; border-top:2px solid var(--sf-gold); }
+  .brand-sf26 { font-family:'Outfit',sans-serif; font-weight:900; font-size:14px; color:var(--sf-glow); letter-spacing:2px; }
+  .brand-live { display:flex; align-items:center; gap:6px; }
+  .brand-live-dot { width:6px; height:6px; background:var(--sf-accent); border-radius:50%; animation:bPulse 2s ease-in-out infinite; }
+  @keyframes bPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .brand-live-text { font-family:'Space Mono',monospace; font-size:10px; font-weight:700; letter-spacing:3px; color:var(--sf-accent); }
+  .brand-date { font-family:'Space Mono',monospace; font-size:10px; color:rgba(240,244,255,.35); letter-spacing:2px; }
+  #scene-dots { position:fixed; bottom:40px; left:50%; transform:translateX(-50%); display:flex; gap:5px; z-index:50; }
+  .scene-dot { width:5px; height:5px; border-radius:50%; background:var(--win-dark); transition:background .3s,transform .3s; }
+  .scene-dot.active { background:var(--win-blue); transform:scale(1.5); }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 1: COUNTDOWN -->
+  <div id="scene-countdown" class="scene active">
+    <div class="desktop-icons">
+      <div class="desk-icon"><div class="desk-icon-img">🏆</div><div class="desk-icon-label">College Bowl</div></div>
+      <div class="desk-icon"><div class="desk-icon-img">📋</div><div class="desk-icon-label">Schedule</div></div>
+      <div class="desk-icon"><div class="desk-icon-img">🌉</div><div class="desk-icon-label">San Francisco</div></div>
+      <div class="desk-icon"><div class="desk-icon-img">🌙</div><div class="desk-icon-label">After Dark</div></div>
+    </div>
+    <div class="w-window countdown-window">
+      <div class="w-titlebar"><span class="w-titlebar-text">SF26 LIVE — Countdown</span><div class="w-titlebar-btns"><div class="w-btn">▾</div><div class="w-btn">▴</div></div></div>
+      <div class="w-body"><div class="countdown-body"><div class="countdown-label">DAYS UNTIL CONFERENCE</div><div class="countdown-number" id="countdown-num">--</div><div class="countdown-unit">days remaining</div><div class="countdown-date">July 1 – 5, 2026 • Hilton San Francisco Union Square</div></div></div>
+      <div class="w-status"><span>NAD 55th Biennial Conference</span><span id="clock-field">--:--</span></div>
+    </div>
+  </div>
+
+  <!-- 2: DIALOGS -->
+  <div id="scene-dialogs" class="scene">
+    <div class="dialog-stack">
+      <div class="w-dialog" id="dlg1" style="top:18%;left:50%;transform:translateX(-50%);width:420px;max-width:85vw;"><div class="w-titlebar"><span class="w-titlebar-text">Conference Alert</span></div><div class="w-dialog-body"><div class="dialog-msg-row"><span class="dialog-icon">⚠️</span><p>This conference cannot be contained in a single PowerPoint.<br><b>Upgrade to SF26 LIVE?</b></p></div><div class="w-dialog-btns"><div class="w-button">Absolutely</div><div class="w-button">Also Yes</div></div></div></div>
+      <div class="w-dialog" id="dlg2" style="top:36%;left:50%;transform:translateX(-44%);width:380px;max-width:80vw;"><div class="w-titlebar"><span class="w-titlebar-text">college_bowl.exe</span></div><div class="w-dialog-body"><div class="dialog-msg-row"><span class="dialog-icon">🏆</span><p><b>WARNING:</b> College Bowl has been upgraded to real-time.<br>Prepare for competition.</p></div><div class="w-dialog-btns"><div class="w-button">Bring It On</div></div></div></div>
+      <div class="w-dialog" id="dlg3" style="top:54%;left:50%;transform:translateX(-56%);width:400px;max-width:82vw;"><div class="w-titlebar"><span class="w-titlebar-text">System Message</span></div><div class="w-dialog-body"><div class="dialog-msg-row"><span class="dialog-icon">🌉</span><p>San Francisco is ready for you.<br><b>Are you ready for San Francisco?</b></p></div><div class="w-dialog-btns"><div class="w-button">Let's Go</div><div class="w-button">I'm Packed</div></div></div></div>
+    </div>
+  </div>
+
+  <!-- 3: INSTALL -->
+  <div id="scene-install" class="scene">
+    <div class="w-dialog rel install-window"><div class="w-titlebar"><span class="w-titlebar-text">Installing SF26 LIVE...</span></div><div class="w-dialog-body" style="padding:0;"><div class="install-body"><div style="font-weight:bold;font-size:14px;">Installing SF26 LIVE Conference System</div><div class="install-filename" id="install-file">Preparing installation...</div><div class="w-progress-track"><div class="w-progress-fill" id="install-bar"></div></div><div class="install-pct" id="install-pct">0%</div><div style="font-size:11px;color:var(--win-dark);">Destination: C:\NAD\SF26_LIVE\</div></div></div></div>
+  </div>
+
+  <!-- 4: PROGRAM MANAGER -->
+  <div id="scene-programs" class="scene">
+    <div class="w-window rel pm-window">
+      <div class="w-titlebar"><span class="w-titlebar-text">Program Manager - [SF26 LIVE]</span><div class="w-titlebar-btns"><div class="w-btn">▾</div><div class="w-btn">▴</div></div></div>
+      <div class="w-menubar"><span><u>F</u>ile</span><span><u>O</u>ptions</span><span><u>W</u>indow</span><span><u>H</u>elp</span></div>
+      <div class="w-body"><div class="pm-body" id="pm-body">
+        <div class="pm-icon"><div class="pm-icon-emoji">🏆</div><div class="pm-label">College<br>Bowl LIVE</div><div class="pm-info">Live real-time competition</div></div>
+        <div class="pm-icon"><div class="pm-icon-emoji">📋</div><div class="pm-label">Conference<br>Schedule</div><div class="pm-info">July 1–5 full event schedule</div></div>
+        <div class="pm-icon"><div class="pm-icon-emoji">🗺️</div><div class="pm-label">Venue<br>Map</div><div class="pm-info">Hilton SF Union Square</div></div>
+        <div class="pm-icon"><div class="pm-icon-emoji">🎭</div><div class="pm-label">Opening<br>Ceremony</div><div class="pm-info">Opening ceremony live reveal</div></div>
+        <div class="pm-icon"><div class="pm-icon-emoji">📚</div><div class="pm-label">Workshops</div><div class="pm-info">Sessions • Panels • Workshops</div></div>
+        <div class="pm-icon"><div class="pm-icon-emoji">🌙</div><div class="pm-label">After<br>Dark</div><div class="pm-info">Evening socials</div></div>
+        <div class="pm-icon"><div class="pm-icon-emoji">📢</div><div class="pm-label">Live<br>Alerts</div><div class="pm-info">Conference updates</div></div>
+        <div class="pm-icon"><div class="pm-icon-emoji">📱</div><div class="pm-label">Second<br>Screen</div><div class="pm-info">Your companion app</div></div>
+      </div></div>
+      <div class="w-status"><span>8 program items</span><span>SF26 LIVE v1.0</span></div>
+    </div>
+  </div>
+
+  <!-- 5: WORKSHOPS -->
+  <div id="scene-workshops" class="scene">
+    <div class="ws-card-container" id="ws-container">
+      <div class="w-window rel workshop-card" data-ws="0"><div class="w-titlebar"><span class="w-titlebar-text">Microsoft PowerPoint - [Workshop_Schedule.ppt]</span><div class="w-titlebar-btns"><div class="w-btn">▾</div><div class="w-btn">▴</div></div></div><div class="w-body"><div class="workshop-body"><div class="ws-clipart">⚖️</div><div class="ws-title">Legal Advocacy &amp;<br>Your Rights</div><div class="ws-divider"></div><div class="ws-meta">Wednesday, July 1 • 2:00 PM • Continental Ballroom A</div><div class="ws-desc">Know your rights under the ADA and beyond. Interactive self-advocacy workshop.</div></div></div><div class="w-status"><span>Slide 1 of 1</span><span>Track A</span></div></div>
+      <div class="w-window rel workshop-card" data-ws="1" style="display:none;"><div class="w-titlebar"><span class="w-titlebar-text">Microsoft PowerPoint - [Workshop_Schedule.ppt]</span><div class="w-titlebar-btns"><div class="w-btn">▾</div><div class="w-btn">▴</div></div></div><div class="w-body"><div class="workshop-body"><div class="ws-clipart">🎓</div><div class="ws-title">Youth Leadership<br>Summit</div><div class="ws-divider"></div><div class="ws-meta">Thursday, July 2 • 10:00 AM • Golden Gate Room</div><div class="ws-desc">Building the next generation of Deaf leaders. Networking and action planning.</div></div></div><div class="w-status"><span>Slide 1 of 1</span><span>Track B</span></div></div>
+      <div class="w-window rel workshop-card" data-ws="2" style="display:none;"><div class="w-titlebar"><span class="w-titlebar-text">Microsoft PowerPoint - [Workshop_Schedule.ppt]</span><div class="w-titlebar-btns"><div class="w-btn">▾</div><div class="w-btn">▴</div></div></div><div class="w-body"><div class="workshop-body"><div class="ws-clipart">💼</div><div class="ws-title">Deaf Professionals<br>in Tech</div><div class="ws-divider"></div><div class="ws-meta">Thursday, July 2 • 3:30 PM • Union Square Room</div><div class="ws-desc">Career paths, accessibility wins, and strategies for thriving in tech.</div></div></div><div class="w-status"><span>Slide 1 of 1</span><span>Track C</span></div></div>
+      <div class="w-window rel workshop-card" data-ws="3" style="display:none;"><div class="w-titlebar"><span class="w-titlebar-text">Microsoft PowerPoint - [Workshop_Schedule.ppt]</span><div class="w-titlebar-btns"><div class="w-btn">▾</div><div class="w-btn">▴</div></div></div><div class="w-body"><div class="workshop-body"><div class="ws-clipart">🏥</div><div class="ws-title">Healthcare Access<br>&amp; Communication</div><div class="ws-divider"></div><div class="ws-meta">Friday, July 3 • 10:00 AM • Continental Ballroom B</div><div class="ws-desc">Navigating healthcare as a Deaf patient or provider.</div></div></div><div class="w-status"><span>Slide 1 of 1</span><span>Track A</span></div></div>
+    </div>
+  </div>
+
+  <!-- 6: NOTEPAD -->
+  <div id="scene-notepad" class="scene">
+    <div class="w-window rel notepad-window"><div class="w-titlebar"><span class="w-titlebar-text">Notepad - [NAD_FACTS.TXT]</span><div class="w-titlebar-btns"><div class="w-btn">▾</div><div class="w-btn">▴</div></div></div><div class="w-menubar"><span><u>F</u>ile</span><span><u>E</u>dit</span><span><u>S</u>earch</span><span><u>H</u>elp</span></div><div class="w-body"><div class="notepad-body" id="notepad-text"></div></div><div class="w-status"><span id="notepad-status">Ln 1, Col 1</span><span>NAD_FACTS.TXT</span></div></div>
+  </div>
+
+  <!-- 7: SPEAKERS -->
+  <div id="scene-speakers" class="scene">
+    <div class="speaker-stack">
+      <div class="w-dialog" id="spk1" style="top:22%;left:50%;transform:translateX(-50%);width:440px;max-width:86vw;"><div class="w-titlebar"><span class="w-titlebar-text">About — Keynote Speaker</span></div><div class="speaker-body"><div class="speaker-avatar">🎤</div><div class="speaker-info"><div class="speaker-name">[Keynote Speaker TBA]</div><div class="speaker-role">Opening Keynote • Wednesday, July 1</div><div class="speaker-topic">Opening keynote address to be announced.</div><div class="speaker-btns"><div class="w-button">OK</div></div></div></div></div>
+      <div class="w-dialog" id="spk2" style="top:42%;left:50%;transform:translateX(-44%);width:440px;max-width:86vw;"><div class="w-titlebar"><span class="w-titlebar-text">About — Featured Presenter</span></div><div class="speaker-body"><div class="speaker-avatar">📊</div><div class="speaker-info"><div class="speaker-name">[Featured Presenter TBA]</div><div class="speaker-role">Plenary Session • Thursday, July 2</div><div class="speaker-topic">Featured presentation topic to be announced.</div><div class="speaker-btns"><div class="w-button">OK</div></div></div></div></div>
+      <div class="w-dialog" id="spk3" style="top:62%;left:50%;transform:translateX(-56%);width:440px;max-width:86vw;"><div class="w-titlebar"><span class="w-titlebar-text">About — Closing Speaker</span></div><div class="speaker-body"><div class="speaker-avatar">🌟</div><div class="speaker-info"><div class="speaker-name">[Closing Speaker TBA]</div><div class="speaker-role">Closing Ceremony • Saturday, July 5</div><div class="speaker-topic">Closing remarks to be announced.</div><div class="speaker-btns"><div class="w-button">OK</div></div></div></div></div>
+    </div>
+  </div>
+
+  <!-- 8: SF TIPS -->
+  <div id="scene-sftips" class="scene">
+    <div class="w-window rel fm-window">
+      <div class="w-titlebar"><span class="w-titlebar-text">File Manager - [C:\SF_GUIDE\]</span><div class="w-titlebar-btns"><div class="w-btn">▾</div><div class="w-btn">▴</div></div></div>
+      <div class="w-menubar"><span><u>F</u>ile</span><span><u>D</u>isk</span><span><u>T</u>ree</span><span><u>V</u>iew</span><span><u>H</u>elp</span></div>
+      <div class="w-body"><div class="fm-body" id="fm-body">
+        <div class="fm-row"><span class="fm-icon">🚋</span><span class="fm-name">TRANSIT\</span><span class="fm-detail">BART + Muni from airport. Powell St station 2 blocks away.</span></div>
+        <div class="fm-row"><span class="fm-icon">🍜</span><span class="fm-name">FOOD\</span><span class="fm-detail">Chinatown 10-min walk. Try dim sum on Stockton St.</span></div>
+        <div class="fm-row"><span class="fm-icon">🌉</span><span class="fm-name">SIGHTS\</span><span class="fm-detail">Golden Gate, Alcatraz, Fisherman's Wharf via transit.</span></div>
+        <div class="fm-row"><span class="fm-icon">☕</span><span class="fm-name">COFFEE\</span><span class="fm-detail">Blue Bottle, Sightglass, Philz — SF takes coffee seriously.</span></div>
+        <div class="fm-row"><span class="fm-icon">🏨</span><span class="fm-name">HOTEL\</span><span class="fm-detail">Hilton SF Union Square. 333 O'Farrell St.</span></div>
+        <div class="fm-row"><span class="fm-icon">🌤️</span><span class="fm-name">WEATHER\</span><span class="fm-detail">July: 55–68°F. Layers essential. Fog burns off by noon.</span></div>
+        <div class="fm-row"><span class="fm-icon">♿</span><span class="fm-name">ACCESS\</span><span class="fm-detail">BART + Muni wheelchair accessible. Full ADA rooms.</span></div>
+        <div class="fm-row"><span class="fm-icon">📱</span><span class="fm-name">WIFI.TXT</span><span class="fm-detail">Conference WiFi details at check-in.</span></div>
+      </div></div>
+      <div class="w-status"><span>8 items</span><span>C:\SF_GUIDE\</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ 9: PHOTO VIEWER ═══ -->
+  <div id="scene-photos" class="scene">
+    <div class="w-window rel pv-window">
+      <div class="w-titlebar"><span class="w-titlebar-text">Paintbrush - [SF_PHOTOS.BMP]</span><div class="w-titlebar-btns"><div class="w-btn">▾</div><div class="w-btn">▴</div></div></div>
+      <div class="w-menubar"><span><u>F</u>ile</span><span><u>E</u>dit</span><span><u>V</u>iew</span><span><u>O</u>ptions</span><span><u>H</u>elp</span></div>
+      <div class="w-body">
+        <div class="pv-viewport">
+          <div class="pv-frame" id="pv-frame">
+            <div class="pv-photo golden-gate" data-photo="0"></div>
+            <div class="pv-photo cable-car" data-photo="1" style="display:none;"></div>
+            <div class="pv-photo painted-ladies" data-photo="2" style="display:none;"></div>
+            <div class="pv-photo chinatown" data-photo="3" style="display:none;"></div>
+          </div>
+          <div class="pv-caption" id="pv-caption">Golden Gate Bridge</div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="pv-nav"><div class="w-button">◄ Prev</div><div class="w-button">Next ►</div></div>
+            <div class="pv-counter" id="pv-counter">1 / 4</div>
+          </div>
+        </div>
+      </div>
+      <div class="w-status"><span>640 x 480</span><span>256 colors</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ 10: PAGEMAKER FLYER ═══ -->
+  <div id="scene-pagemaker" class="scene">
+    <div class="w-window rel pm2-window">
+      <div class="w-titlebar"><span class="w-titlebar-text">Aldus PageMaker 5.0 - [NAD_FLYER.PM5]</span><div class="w-titlebar-btns"><div class="w-btn">▾</div><div class="w-btn">▴</div></div></div>
+      <div class="w-menubar"><span><u>F</u>ile</span><span><u>E</u>dit</span><span><u>U</u>tilities</span><span><u>L</u>ayout</span><span><u>T</u>ype</span><span><u>E</u>lement</span><span><u>H</u>elp</span></div>
+      <div class="w-body">
+        <div class="pm2-pasteboard">
+          <div class="pm2-page" id="pm2-page">
+            <div class="pm2-block" data-pm="0"><div class="pm2-clipart">🤟</div></div>
+            <div class="pm2-block" data-pm="1"><div class="pm2-logo-text">N A D</div></div>
+            <div class="pm2-block" data-pm="2"><div class="pm2-headline">55th Biennial Conference<br>San Francisco 2026</div></div>
+            <div class="pm2-block" data-pm="3"><div class="pm2-rule"></div></div>
+            <div class="pm2-block" data-pm="4"><div class="pm2-detail">July 1 – 5, 2026<br>Hilton San Francisco Union Square<br>333 O'Farrell Street</div></div>
+            <div class="pm2-block" data-pm="5"><div class="pm2-detail"><b>Workshops • Keynotes • College Bowl<br>After Dark • Community • Advocacy</b></div></div>
+            <div class="pm2-block" data-pm="6"><div class="pm2-rule"></div></div>
+            <div class="pm2-block" data-pm="7"><div class="pm2-detail">Register at <span style="color:var(--win-blue);text-decoration:underline;">www.nad.org</span></div></div>
+            <div class="pm2-block" data-pm="8"><div class="pm2-footer">NATIONAL ASSOCIATION OF THE DEAF • EST. 1880</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="w-status"><span>Page 1</span><span>100%</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ 11: SCANNER ═══ -->
+  <div id="scene-scanner" class="scene">
+    <div class="w-window rel scan-window">
+      <div class="w-titlebar"><span class="w-titlebar-text">HP ScanJet — [HILTON_FLOOR3.TIF]</span><div class="w-titlebar-btns"><div class="w-btn">▾</div><div class="w-btn">▴</div></div></div>
+      <div class="w-menubar"><span><u>F</u>ile</span><span><u>S</u>can</span><span><u>I</u>mage</span><span><u>H</u>elp</span></div>
+      <div class="w-body">
+        <div class="scan-viewport">
+          <div class="scan-page" id="scan-page">
+            <div class="scan-bar" id="scan-bar"></div>
+            <div class="bp-outer">
+              <div class="bp-room1"></div>
+              <div class="bp-room2"></div>
+              <div class="bp-room3"></div>
+              <div class="bp-door1"></div>
+              <div class="bp-door2"></div>
+            </div>
+            <div class="bp-label bp-l1">Continental<br>Ballroom A</div>
+            <div class="bp-label bp-l2">Continental<br>Ballroom B</div>
+            <div class="bp-label bp-l3">Grand Ballroom — Opening Ceremony / College Bowl</div>
+            <div class="bp-title">HILTON SF UNION SQUARE<br>3RD FLOOR — BALLROOM LEVEL<br>CONFIDENTIAL</div>
+          </div>
+          <div class="scan-status" id="scan-status">Scanning... 300 DPI</div>
+        </div>
+      </div>
+      <div class="w-status"><span>TWAIN Interface</span><span>300 DPI • Grayscale</span></div>
+    </div>
+  </div>
+
+  <!-- ═══ 12: NETSCAPE ═══ -->
+  <div id="scene-netscape" class="scene">
+    <div class="w-window rel ns-window">
+      <div class="w-titlebar"><span class="w-titlebar-text">Netscape Navigator - [National Association of the Deaf]</span><div class="w-titlebar-btns"><div class="w-btn">▾</div><div class="w-btn">▴</div></div></div>
+      <div class="ns-toolbar">
+        <div class="w-button">Back</div>
+        <div class="w-button">Forward</div>
+        <div class="w-button">Reload</div>
+        <div class="w-button">Home</div>
+        <div style="flex-grow:1;"></div>
+        <div class="ns-throbber" id="ns-throbber">🌐</div>
+      </div>
+      <div class="ns-address">
+        <span class="ns-address-label">Location:</span>
+        <div class="ns-address-bar" id="ns-url">http://www.nad.org/</div>
+      </div>
+      <div class="ns-progress"><div class="ns-progress-bar" id="ns-progress"></div></div>
+      <div class="w-body">
+        <div class="ns-page" id="ns-page">
+          <div class="ns-block" data-ns="0"><div class="ns-img-placeholder">[ nad_logo.gif — 4.2KB ]</div></div>
+          <div class="ns-block" data-ns="1"><div class="ns-h1">National Association of the Deaf</div></div>
+          <div class="ns-block" data-ns="2"><div class="ns-hr"></div></div>
+          <div class="ns-block" data-ns="3"><p><b>Welcome to NAD Online!</b> The nation's premier civil rights organization for Deaf and hard of hearing individuals.</p></div>
+          <div class="ns-block" data-ns="4"><p>🆕 <b>55th Biennial Conference — San Francisco, CA</b><br>July 1–5, 2026 at the Hilton San Francisco Union Square<br><span class="ns-link">Click here to register →</span></p></div>
+          <div class="ns-block" data-ns="5"><div class="ns-hr"></div><p><b>What's New:</b></p><ul class="ns-list"><li><span class="ns-link">SF26 LIVE — Conference second screen</span></li><li><span class="ns-link">College Bowl goes real-time</span></li><li><span class="ns-link">Workshop schedule released</span></li></ul></div>
+          <div class="ns-block" data-ns="6"><div class="ns-hr"></div><p style="font-size:11px;color:var(--win-dark);">© 1880–2026 National Association of the Deaf. All rights reserved.<br>Best viewed with Netscape Navigator 3.0 at 800×600.</p></div>
+        </div>
+      </div>
+      <div class="w-status"><span class="ns-status-bar" id="ns-status">Document: Done</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BRANDING -->
+<div id="brand-strip">
+  <span class="brand-sf26">SF26</span>
+  <div class="brand-live"><div class="brand-live-dot"></div><span class="brand-live-text">LIVE</span></div>
+  <span class="brand-date">JULY 2026 • SAN FRANCISCO</span>
+</div>
+<div id="scene-dots"></div>
+
+<script>
+  // ═══ SCENE MANAGEMENT ═══
+  const sceneIds = [
+    'scene-countdown','scene-dialogs','scene-install','scene-programs',
+    'scene-workshops','scene-notepad','scene-speakers','scene-sftips',
+    'scene-photos','scene-pagemaker','scene-scanner','scene-netscape'
+  ];
+  const scenes = sceneIds.map(id => document.getElementById(id));
+  let cur = 0;
+  const dotsC = document.getElementById('scene-dots');
+  sceneIds.forEach((_,i) => { const d=document.createElement('div'); d.className='scene-dot'+(i===0?' active':''); dotsC.appendChild(d); });
+  const dots = dotsC.querySelectorAll('.scene-dot');
+  function switchScene(i) { scenes.forEach((s,j)=>s.classList.toggle('active',j===i)); dots.forEach((d,j)=>d.classList.toggle('active',j===i)); cur=i; }
+
+  // ═══ 1: COUNTDOWN ═══
+  function updateCountdown() {
+    const d=Math.max(0,Math.ceil((new Date('2026-07-01T00:00:00')-new Date())/864e5));
+    document.getElementById('countdown-num').textContent=d;
+    const n=new Date(); document.getElementById('clock-field').textContent=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
+  }
+  updateCountdown(); setInterval(updateCountdown,30000);
+
+  // ═══ 2: DIALOGS ═══
+  const dlgs=[document.getElementById('dlg1'),document.getElementById('dlg2'),document.getElementById('dlg3')]; let dlgT=[];
+  function enterDialogs(){dlgs.forEach(d=>d.classList.remove('pop'));dlgT=[setTimeout(()=>dlgs[0].classList.add('pop'),600),setTimeout(()=>dlgs[1].classList.add('pop'),3000),setTimeout(()=>dlgs[2].classList.add('pop'),5500)];}
+  function exitDialogs(){dlgT.forEach(clearTimeout);dlgT=[];dlgs.forEach(d=>d.classList.remove('pop'));}
+
+  // ═══ 3: INSTALL ═══
+  const iFiles=['Copying excitement.dll...','Registering college_bowl.exe...','Installing live_engine.sys...','Extracting sf_venues.dat...','Loading golden_gate.bmp...','Configuring second_screen.ini...','Building scoreboard.ocx...','Linking audience_sync.dll...','Installing after_dark.scr...','Writing show_control.drv...','Registering live_alerts.vbx...','Finalizing sf26_live.exe...','Optimizing conference.cfg...','Installation complete!'];
+  let iInt=null;
+  function enterInstall(){let s=0;const b=document.getElementById('install-bar'),f=document.getElementById('install-file'),p=document.getElementById('install-pct');b.style.width='0%';f.textContent=iFiles[0];p.textContent='0%';iInt=setInterval(()=>{s++;if(s>=iFiles.length){clearInterval(iInt);return;}const pct=Math.round(s/(iFiles.length-1)*100);b.style.width=pct+'%';f.textContent=iFiles[s];p.textContent=pct+'%';},800);}
+  function exitInstall(){if(iInt)clearInterval(iInt);}
+
+  // ═══ 4: PROGRAM MANAGER ═══
+  const pmI=document.querySelectorAll('.pm-icon');let pmInt=null,pmS=0;
+  function enterPrograms(){pmS=0;pmI.forEach(i=>i.classList.remove('highlight'));pmInt=setInterval(()=>{pmI.forEach(i=>i.classList.remove('highlight'));if(pmS<pmI.length)pmI[pmS].classList.add('highlight');pmS=(pmS+1)%(pmI.length+1);},1400);}
+  function exitPrograms(){if(pmInt)clearInterval(pmInt);pmI.forEach(i=>i.classList.remove('highlight'));}
+
+  // ═══ 5: WORKSHOPS ═══
+  const wsC=document.querySelectorAll('[data-ws]');let wsInt=null,wsS=0;
+  function enterWorkshops(){wsS=0;wsC.forEach((c,i)=>{c.style.display=i===0?'flex':'none';c.classList.remove('show');});setTimeout(()=>wsC[0].classList.add('show'),100);wsInt=setInterval(()=>{wsC[wsS].classList.remove('show');setTimeout(()=>{wsC[wsS].style.display='none';wsS=(wsS+1)%wsC.length;wsC[wsS].style.display='flex';setTimeout(()=>wsC[wsS].classList.add('show'),50);},400);},3200);}
+  function exitWorkshops(){if(wsInt)clearInterval(wsInt);wsC.forEach(c=>c.classList.remove('show'));}
+
+  // ═══ 6: NOTEPAD ═══
+  const nFacts=["Did you know?\n\nThe National Association of the Deaf was founded in 1880 in Cincinnati, Ohio — one of the oldest civil rights organizations in the United States.","Did you know?\n\nThe NAD played a key role in preserving ASL through film, commissioning some of the earliest known ASL recordings in 1913.","Did you know?\n\nSan Francisco has been a hub for Deaf culture for over a century. The California School for the Deaf was established in 1860.","Did you know?\n\nThe 2026 conference marks the NAD's 55th Biennial Conference — a tradition spanning nearly 150 years."];
+  let nInt=null,nCi=0,nFi=0;
+  function enterNotepad(){const el=document.getElementById('notepad-text');const f=nFacts[nFi%nFacts.length];nFi++;nCi=0;el.innerHTML='<span class="notepad-cursor"></span>';nInt=setInterval(()=>{if(nCi>=f.length){clearInterval(nInt);return;}const c=el.querySelector('.notepad-cursor');el.insertBefore(document.createTextNode(f[nCi]),c);nCi++;const ls=f.substring(0,nCi).split('\n');document.getElementById('notepad-status').textContent='Ln '+ls.length+', Col '+ls[ls.length-1].length;},45);}
+  function exitNotepad(){if(nInt)clearInterval(nInt);}
+
+  // ═══ 7: SPEAKERS ═══
+  const spks=[document.getElementById('spk1'),document.getElementById('spk2'),document.getElementById('spk3')];let spkT=[];
+  function enterSpeakers(){spks.forEach(s=>s.classList.remove('pop'));spkT=[setTimeout(()=>spks[0].classList.add('pop'),500),setTimeout(()=>spks[1].classList.add('pop'),2800),setTimeout(()=>spks[2].classList.add('pop'),5200)];}
+  function exitSpeakers(){spkT.forEach(clearTimeout);spkT=[];spks.forEach(s=>s.classList.remove('pop'));}
+
+  // ═══ 8: SF TIPS ═══
+  const fmR=document.querySelectorAll('.fm-row');let fmInt=null,fmS=0;
+  function enterSFTips(){fmS=0;fmR.forEach(r=>r.classList.remove('show','highlight'));fmInt=setInterval(()=>{if(fmS<fmR.length){fmR[fmS].classList.add('show');fmR.forEach(r=>r.classList.remove('highlight'));fmR[fmS].classList.add('highlight');fmS++;}else clearInterval(fmInt);},1200);}
+  function exitSFTips(){if(fmInt)clearInterval(fmInt);fmR.forEach(r=>r.classList.remove('show','highlight'));}
+
+  // ═══ 9: PHOTO VIEWER ═══
+  const pvPhotos=document.querySelectorAll('.pv-photo');
+  const pvCaptions=['Golden Gate Bridge','Cable Car on Powell St','Painted Ladies, Alamo Square','Chinatown Gate'];
+  const pvFrame=document.getElementById('pv-frame');
+  const pvCaption=document.getElementById('pv-caption');
+  const pvCounter=document.getElementById('pv-counter');
+  let pvInt=null,pvIdx=0;
+  function showPhoto(i){pvPhotos.forEach((p,j)=>p.style.display=j===i?'block':'none');pvCaption.textContent=pvCaptions[i];pvCounter.textContent=(i+1)+' / '+pvPhotos.length;pvFrame.classList.remove('show');setTimeout(()=>pvFrame.classList.add('show'),50);pvCaption.classList.remove('show');setTimeout(()=>pvCaption.classList.add('show'),300);}
+  function enterPhotos(){pvIdx=0;showPhoto(0);pvInt=setInterval(()=>{pvIdx=(pvIdx+1)%pvPhotos.length;showPhoto(pvIdx);},3000);}
+  function exitPhotos(){if(pvInt)clearInterval(pvInt);pvFrame.classList.remove('show');pvCaption.classList.remove('show');}
+
+  // ═══ 10: PAGEMAKER ═══
+  const pmBlocks=document.querySelectorAll('[data-pm]');let pmkInt=null,pmkS=0;
+  function enterPagemaker(){pmkS=0;pmBlocks.forEach(b=>b.classList.remove('show'));pmkInt=setInterval(()=>{if(pmkS<pmBlocks.length){pmBlocks[pmkS].classList.add('show');pmkS++;}else clearInterval(pmkInt);},900);}
+  function exitPagemaker(){if(pmkInt)clearInterval(pmkInt);pmBlocks.forEach(b=>b.classList.remove('show'));}
+
+  // ═══ 11: SCANNER ═══
+  const scanPage=document.getElementById('scan-page');
+  const scanBar=document.getElementById('scan-bar');
+  const scanStatus=document.getElementById('scan-status');
+  let scanT=[];
+  function enterScanner(){scanPage.classList.remove('revealed');scanBar.classList.remove('active');scanStatus.classList.remove('show');scanStatus.textContent='Scanning... 300 DPI';scanT=[setTimeout(()=>{scanBar.classList.add('active');scanStatus.classList.add('show');},500),setTimeout(()=>{scanPage.classList.add('revealed');},2000),setTimeout(()=>{scanStatus.textContent='Scan complete. 1 page acquired.';scanBar.classList.remove('active');},8000)];}
+  function exitScanner(){scanT.forEach(clearTimeout);scanT=[];scanBar.classList.remove('active');scanPage.classList.remove('revealed');scanStatus.classList.remove('show');}
+
+  // ═══ 12: NETSCAPE ═══
+  const nsBlocks=document.querySelectorAll('[data-ns]');
+  const nsThrobber=document.getElementById('ns-throbber');
+  const nsProgress=document.getElementById('ns-progress');
+  const nsStatus=document.getElementById('ns-status');
+  let nsInt=null,nsS=0;
+  function enterNetscape(){nsS=0;nsBlocks.forEach(b=>b.classList.remove('show'));nsThrobber.classList.add('spinning');nsStatus.textContent='Transferring data from www.nad.org...';nsProgress.style.width='0%';let p=0;nsInt=setInterval(()=>{if(nsS<nsBlocks.length){nsBlocks[nsS].classList.add('show');nsS++;p=Math.round(nsS/nsBlocks.length*100);nsProgress.style.width=p+'%';nsStatus.textContent='Transferring data from www.nad.org... '+p+'%';}else{clearInterval(nsInt);nsThrobber.classList.remove('spinning');nsStatus.textContent='Document: Done ('+((nsBlocks.length*1.8).toFixed(1))+'KB)';nsProgress.style.width='100%';}},1400);}
+  function exitNetscape(){if(nsInt)clearInterval(nsInt);nsThrobber.classList.remove('spinning');nsBlocks.forEach(b=>b.classList.remove('show'));nsProgress.style.width='0%';}
+
+  // ═══ ORCHESTRATOR ═══
+  const durations=[10000,10000,12000,12000,14000,12000,10000,11000,13000,11000,11000,12000];
+  const enter=[()=>{},enterDialogs,enterInstall,enterPrograms,enterWorkshops,enterNotepad,enterSpeakers,enterSFTips,enterPhotos,enterPagemaker,enterScanner,enterNetscape];
+  const exit=[()=>{},exitDialogs,exitInstall,exitPrograms,exitWorkshops,exitNotepad,exitSpeakers,exitSFTips,exitPhotos,exitPagemaker,exitScanner,exitNetscape];
+
+  function advance(){const n=(cur+1)%scenes.length;exit[cur]();switchScene(n);enter[n]();setTimeout(advance,durations[n]);}
+  setTimeout(advance,durations[0]);
+</script>
+</body>
+</html>
