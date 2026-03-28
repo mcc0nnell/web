@@ -576,8 +576,14 @@ ul, ol { list-style: none; }
   font-weight: 500;
 }
 
-.sf26__cta {
+.sf26__ctas {
   margin-top: 48px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.sf26__cta {
   display: inline-flex;
   align-items: center;
   gap: 10px;
