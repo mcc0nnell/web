@@ -379,16 +379,16 @@ const D = [
   {c:1,n:"58th", y:2026,city:"San Francisco, CA",   p:"Stephanie Hakulin",      sf:1},
 ];
 function build(d) {
-  if (d.m) return "<span class="mile"><span class="mile-yr">" + d.y + "</span><span class="mile-txt">" + d.x + "</span></span><span class="dot"></span>";
-  var cls = d.sf ? "entry sf26" : "entry";
-  var inner = "<span class="yr-block"><span class="yr">" + d.y + "</span><span class="num">" + d.n + "</span></span>";
-  inner += "<span class="info-block">";
-  if (d.sf) inner += "<span class="sf26-badge">SF26</span>";
-  inner += "<span class="city">" + d.city + "</span>";
-  if (d.p) inner += "<span class="pres">" + d.p + "</span>";
-  if (d.x) inner += "<span class="note">" + d.x + "</span>";
-  inner += "</span>";
-  return "<span class="" + cls + "">" + inner + "</span><span class="dot"></span>";
+  if (d.m) return '<span class="mile"><span class="mile-yr">' + d.y + '</span><span class="mile-txt">' + d.x + '</span></span><span class="dot"></span>';
+  var cls = d.sf ? 'entry sf26' : 'entry';
+  var inner = '<span class="yr-block"><span class="yr">' + d.y + '</span><span class="num">' + d.n + '</span></span>';
+  inner += '<span class="info-block">';
+  if (d.sf) inner += '<span class="sf26-badge">SF26</span>';
+  inner += '<span class="city">' + d.city + '</span>';
+  if (d.p) inner += '<span class="pres">' + d.p + '</span>';
+  if (d.x) inner += '<span class="note">' + d.x + '</span>';
+  inner += '</span>';
+  return '<span class="' + cls + '">' + inner + '</span><span class="dot"></span>';
 }
 var t = document.getElementById("ticker");
 var html = D.map(build).join("");
