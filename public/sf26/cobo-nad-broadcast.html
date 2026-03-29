@@ -14,7 +14,7 @@ button{cursor:pointer;font-family:var(--fb);border:none}input,textarea,select{fo
 .topbar{position:fixed;top:0;left:0;right:0;z-index:999;height:62px;background:linear-gradient(180deg,rgba(242,168,0,.98),rgba(226,153,0,.96));border-bottom:1px solid rgba(255,255,255,.25);display:flex;align-items:center;padding:0 14px;gap:8px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
 .topbar:after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,transparent,rgba(5,15,34,.4),transparent)}
 .topbar .logo{display:flex;align-items:center;gap:10px;font-family:var(--fd);font-size:28px;color:var(--panel);letter-spacing:4px;font-weight:800;margin-right:10px;line-height:1}
-.topbar .logo img{width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 1px 3px rgba(0,0,0,.2))}
+.topbar .logo img{width:34px;height:34px;object-fit:cover;border-radius:50%;filter:drop-shadow(0 1px 3px rgba(0,0,0,.2))}
 .tbtn{padding:8px 12px;border-radius:7px;font-size:11px;font-weight:700;letter-spacing:.14em;background:transparent;color:rgba(11,30,61,.7);transition:all .18s ease;text-transform:uppercase}
 .tbtn:hover{color:var(--panel);background:rgba(255,255,255,.2)}
 .tbtn.on{background:var(--panel);color:var(--white);box-shadow:0 4px 16px rgba(5,15,34,.35)}
@@ -91,7 +91,7 @@ button{cursor:pointer;font-family:var(--fb);border:none}input,textarea,select{fo
 <div id="v-tm" class="v"><div class="fox-scores" id="tmf"></div><div id="tmt"></div><div style="max-width:620px;margin:0 auto;padding:14px" id="tmb"></div></div>
 <div id="v-jg" class="v"><div class="fox-scores" id="jgf"></div><div style="max-width:620px;margin:0 auto;padding:14px" id="jgb"></div></div>
 <div id="v-lv" class="v"><div style="background:var(--gold);padding:10px 14px;display:flex;justify-content:space-between;border-bottom:2px solid rgba(0,0,0,.08)">
-  <div style="font-family:var(--fd);font-size:20px;color:var(--panel);letter-spacing:3px;font-weight:800;display:flex;align-items:center;gap:10px"><img src="assets/nad-logo.png" alt="NAD logo" style="width:24px;height:24px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.2))">CoBo — NAD Live</div>
+  <div style="font-family:var(--fd);font-size:20px;color:var(--panel);letter-spacing:3px;font-weight:800;display:flex;align-items:center;gap:10px"><img src="assets/nad-logo.png" alt="NAD logo" style="width:24px;height:24px;object-fit:cover;border-radius:50%;filter:drop-shadow(0 1px 2px rgba(0,0,0,.2))">CoBo — NAD Live</div>
   <div style="font-family:var(--fb);font-size:10px;color:rgba(11,30,61,.62)"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--green);margin-right:3px"></span>CONNECTED</div></div>
   <div class="fox-scores" id="lvf"></div>
   <div style="display:flex;background:var(--panel);border-bottom:1px solid rgba(242,168,0,.18)" id="lvtabs">
