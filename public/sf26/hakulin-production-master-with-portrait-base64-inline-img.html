@@ -498,22 +498,71 @@
     .nad-mark {
       position: absolute;
       left: 50%;
-      bottom: 2.8%;
+      bottom: 2.15%;
       z-index: 8;
-      width: 37px;
+      width: 72px;
+      height: 82px;
+      display: grid;
+      place-items: center;
+      padding: 11px 10px 16px;
       transform: translateX(-50%);
-      opacity: 0.92;
-      filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.45));
+      isolation: isolate;
+      clip-path: polygon(16% 0%, 84% 0%, 100% 18%, 100% 68%, 50% 100%, 0% 68%, 0% 18%);
+      background:
+        linear-gradient(180deg, rgba(255, 247, 221, 0.34), rgba(255, 247, 221, 0.02) 24%),
+        linear-gradient(180deg, #3a240d 0%, #8a5a1f 30%, #c99243 58%, #5a3812 100%);
+      border: 1px solid rgba(255, 244, 214, 0.52);
+      box-shadow:
+        0 14px 24px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        inset 0 -6px 12px rgba(34, 19, 3, 0.42);
+    }
+
+    .nad-mark::before,
+    .nad-mark::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .nad-mark::before {
+      inset: 3px;
+      clip-path: polygon(16% 0%, 84% 0%, 100% 18%, 100% 68%, 50% 100%, 0% 68%, 0% 18%);
+      background:
+        linear-gradient(180deg, rgba(16, 24, 43, 0.92), rgba(9, 18, 34, 0.74)),
+        radial-gradient(circle at 50% 26%, rgba(255, 244, 214, 0.18), transparent 52%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      z-index: 0;
+    }
+
+    .nad-mark::after {
+      width: 48px;
+      height: 48px;
+      left: 50%;
+      top: 14px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 50% 38%, #ffffff 0%, #fffdfa 58%, #f0e7d3 100%);
+      border: 2px solid rgba(255, 244, 214, 0.72);
+      box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95),
+        inset 0 -2px 5px rgba(193, 163, 98, 0.34);
+      z-index: 1;
     }
 
     .nad-mark img {
+      position: relative;
+      z-index: 2;
       display: block;
-      width: 100%;
-      height: auto;
-      object-fit: cover;
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
       object-position: center;
       border-radius: 50%;
-      mix-blend-mode: screen;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14);
     }
 
     .sr-only {
@@ -748,7 +797,7 @@
       </div>
 
       <div class="nad-mark" aria-hidden="true">
-        <img src="assets/nad-logo-t.png" alt="" />
+        <img src="assets/nad-logo.png" alt="" />
       </div>
 
       <span class="sr-only">NAD SF26 Presidents Series, Stephanie Hakulin, overall 94, leadership icon classification.</span>
