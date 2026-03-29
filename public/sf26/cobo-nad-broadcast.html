@@ -113,7 +113,7 @@ const SQ=[{cat:"Deaf Heritage & Culture",text:"In 1988, this historic protest at
 {cat:"Mathematics",text:"What is the only even prime number?",answer:"2"}];
 let si=0;
 const TR={idle:["category"],category:["challenge"],challenge:["question"],question:["timer"],timer:["time_up"],time_up:["reveal"],reveal:["judging"],judging:["scoring"],scoring:["category","round_transition","champion"],round_transition:["category"],champion:["idle"]};
-let G={phase:"idle",round:1,qn:0,q:{cat:"",text:"",ans:"",lk:false,vis:false},
+let G={phase:"idle",round:1,qn:0,q:{cat:"",text:"",ans:"",lk:false,vis:false,no:null,scored:false},
 teams:[{id:"a",name:"GALLAUDET",sh:"GU",col:"#2563eb",score:0,ch:false,a:{t:"",s:"idle"},sc:{r:null,d:0},players:[{n:"Jordan K.",y:"Sr",m:"Poli Sci"},{n:"Maya R.",y:"Jr",m:"Biology"},{n:"Elias T.",y:"Sr",m:"Math"},{n:"Drea W.",y:"So",m:"History"}],on:[0,1,2],coach:"Dr. Allen"},
 {id:"b",name:"RIT/NTID",sh:"RIT",col:"#dc2626",score:0,ch:false,a:{t:"",s:"idle"},sc:{r:null,d:0},players:[{n:"Priya S.",y:"Sr",m:"CS"},{n:"Liam F.",y:"Jr",m:"Eng"},{n:"Tessa M.",y:"Sr",m:"Physics"},{n:"Noah C.",y:"Jr",m:"Design"}],on:[0,1,2],coach:"Prof. Chen"},
 {id:"c",name:"CSUN",sh:"CSUN",col:"#d97706",score:0,ch:false,a:{t:"",s:"idle"},sc:{r:null,d:0},players:[{n:"Kai L.",y:"Sr",m:"Deaf Studies"},{n:"Ava B.",y:"Jr",m:"Chem"},{n:"Marcus D.",y:"Sr",m:"English"},{n:"Zara P.",y:"So",m:"Ling"}],on:[0,1,2],coach:"Dr. Ramirez"}],
@@ -124,6 +124,33 @@ let D={cat:"",text:"",ans:""};
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
 function teamById(id){return G.teams.find(t=>t.id===id)||G.teams[0];}
 function setDraft(k,v){D[k]=v;}
+function norm(v){return String(v??"").trim().replace(/\s+/g," ").toLowerCase();}
+function curQ(){return G.q.no??(G.q.text||G.q.cat?G.qn+1:null);}
+function canAdvance(){
+if(!nxt().length)return false;
+if(G.phase==="scoring"&&!G.q.scored)return false;
+return true;
+}
+function nextPhaseLabel(){
+if(!canAdvance())return"";
+const n=nxt();if(!n.length)return"";
+if(G.phase!=="scoring")return n[0];
+return G.qn>=18?(G.round>=3?"champion":"round_transition"):"category";
+}
+function teamOutcome(t){
+if(["judging","scoring"].includes(G.phase)){
+const c=G.con[t.id]||"pending";
+if(["correct","incorrect","hold","conflict","pending"].includes(c))return c;
+}
+if(!norm(G.q.ans))return"pending";
+return norm(t.a.t)===norm(G.q.ans)?"correct":"incorrect";
+}
+function teamDelta(t){
+const out=teamOutcome(t);
+if(out==="correct")return t.ch?C[G.round].c:P[G.round];
+if(out==="incorrect")return t.ch?C[G.round].w:0;
+return null;
+}
 function setPredOpen(open){
 if(open){G.pred={open:true,v:{},my:null};return;}
 G.pred={...G.pred,open:false,my:null};
@@ -139,39 +166,39 @@ function fxT(){if(!G.tmr.run&&G.phase!=="time_up"&&G.phase!=="timer")return"";co
 return`<div class="fox-tmr"><div class="fox-tmr-n ${u?"urg":""}">${G.tmr.rem}</div><div class="fox-tmr-t"><div class="fox-tmr-f ${u?"urg":""}" style="width:${p}%"></div></div></div>`;}
 
 function nxt(){return TR[G.phase]||[];}
-function adv(){const n=nxt();if(!n.length)return;let t=n[0];
-if(G.phase==="scoring")t=G.qn>=18?(G.round>=3?"champion":"round_transition"):"category";
-sp(t);}
+function adv(){if(!canAdvance())return;const t=nextPhaseLabel();if(!t)return;sp(t);}
 function sp(p){if(!TR[G.phase]?.includes(p))return;G.phase=p;
 if(p==="timer"){stopT();G.tmr.rem=G.tmr.dur;G.tmr.run=true;ti=setInterval(()=>{if(G.tmr.rem>0){G.tmr.rem--;R();}if(G.tmr.rem<=0)sp("time_up");},1000);}
 if(p==="time_up"){stopT();G.q.lk=true;G.teams.forEach(t=>t.a.s="locked");}
 if(p==="reveal")G.q.vis=true;if(p==="scoring")cc();if(p==="round_transition"){G.round=Math.min(3,G.round+1);G.qn=0;}
 if(p==="question")setPredOpen(true);
-if(["idle","category","challenge","reveal","judging","scoring","round_transition","champion"].includes(p))setPredOpen(false);
+if(["idle","category","challenge","time_up","reveal","judging","scoring","round_transition","champion"].includes(p))setPredOpen(false);
 if(p==="idle")rq();R();}
 function stopT(){if(ti){clearInterval(ti);ti=null;}G.tmr.run=false;}
-function rq(){G.q={cat:"",text:"",ans:"",lk:false,vis:false};G.teams.forEach(t=>{t.ch=false;t.a={t:"",s:"idle"};t.sc={r:null,d:0};});
+function rq(){G.q={cat:"",text:"",ans:"",lk:false,vis:false,no:null,scored:false};G.teams.forEach(t=>{t.ch=false;t.a={t:"",s:"idle"};t.sc={r:null,d:0};});
 G.judges.forEach(j=>j.d={});G.con={};G.pred={open:false,v:{},my:null};}
 function cc(){G.con={};G.teams.forEach(t=>{const d=G.judges.map(j=>j.d[t.id]||null);
 if(d.some(v=>!v)){G.con[t.id]="pending";return;}if(d.includes("hold")){G.con[t.id]="hold";return;}
 G.con[t.id]=d.every(x=>x==="correct")?"correct":d.every(x=>x==="incorrect")?"incorrect":"conflict";});}
-function asc(){if(Object.values(G.con).some(v=>["pending","hold","conflict"].includes(v))){alert("Resolve all first.");return;}
-G.teams.forEach(t=>{const ok=G.con[t.id]==="correct";const d=t.ch?(ok?C[G.round].c:C[G.round].w):(ok?P[G.round]:0);t.score+=d;t.sc={r:ok?"correct":"incorrect",d};});G.qn++;R();}
-function ldQ(){rq();G.q={cat:D.cat.trim(),text:D.text.trim(),ans:D.ans.trim(),lk:false,vis:false};G.phase="idle";R();}
+function asc(){if(G.phase!=="scoring"||G.q.scored)return;if(Object.values(G.con).some(v=>["pending","hold","conflict"].includes(v))){alert("Resolve all first.");return;}
+G.teams.forEach(t=>{const ok=G.con[t.id]==="correct";const d=t.ch?(ok?C[G.round].c:C[G.round].w):(ok?P[G.round]:0);t.score+=d;t.sc={r:ok?"correct":"incorrect",d};});G.q.scored=true;G.qn++;R();}
+function ldQ(){const cat=D.cat.trim(),text=D.text.trim(),ans=D.ans.trim();if(!cat||!text||!ans){alert("Load a category, question, and official answer first.");return;}
+rq();G.q={cat,text,ans,lk:false,vis:false,no:G.qn+1,scored:false};G.phase="idle";R();}
 function smQ(){const q=SQ[si%SQ.length];si++;D={cat:q.cat,text:q.text,ans:q.answer};ldQ();}
 
 function R(){document.getElementById("gph").textContent=G.phase.toUpperCase().replace(/_/g," ");
 fxS("opf");fxS("tmf");fxS("jgf");fxS("lvf");
 ({op:rOp,tm:rTm,jg:rJg,lv:rLv,sc:rSc,sb:rSb})[cv]?.();}
 
-function rOp(){const n=nxt();const phs=["idle","category","challenge","question","timer","time_up","reveal","judging","scoring"];
+function rOp(){const n=nxt(),nextLabel=nextPhaseLabel();const phs=["idle","category","challenge","question","timer","time_up","reveal","judging","scoring"];
 const pi=phs.indexOf(G.phase);
 let h=`<div class="oc"><h3>Question Flow</h3><div class="ps-row">${phs.map((p,i)=>{
-const cl=p===G.phase?"cur":i<pi?"done":n.includes(p)?"nxt":"";
-return`<div class="ps ${cl}" ${n.includes(p)?`onclick="sp('${p}')"`:""}>${p.replace(/_/g," ").toUpperCase()}</div>`;}).join("")}</div>
+const jumpable=n.includes(p)&&canAdvance();
+const cl=p===G.phase?"cur":i<pi?"done":jumpable?"nxt":"";
+return`<div class="ps ${cl}" ${jumpable?`onclick="sp('${p}')"`:""}>${p.replace(/_/g," ").toUpperCase()}</div>`;}).join("")}</div>
 <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-<button class="ob big" ${n.length?"":"disabled"} onclick="adv()">Advance →</button>
-<span style="font-family:var(--fm);font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase">${n.length?"Next: "+n[0].toUpperCase().replace(/_/g," "):"Flow complete"}</span></div></div>`;
+<button class="ob big" ${canAdvance()?"":"disabled"} onclick="adv()">Advance →</button>
+<span style="font-family:var(--fm);font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase">${nextLabel?"Next: "+nextLabel.toUpperCase().replace(/_/g," "):"Flow complete"}</span></div></div>`;
 
 h+=`<div class="op-grid"><div>`;
 h+=`<div class="oc"><h3>Question Authoring</h3><div style="display:grid;grid-template-columns:minmax(160px,.35fr) 1fr;gap:10px">
@@ -227,11 +254,11 @@ oninput="teamById('${t.id}').a.t=this.value;teamById('${t.id}').a.s=this.value?'
 <div style="font-family:var(--fm);font-size:9px;color:${t.a.s==="locked"?"var(--fire)":t.a.s==="drafting"?"var(--electric)":"var(--muted)"};letter-spacing:1px;margin-top:3px">${t.a.s.toUpperCase()}</div></div>`;
 document.getElementById("tmb").innerHTML=h;}
 
-function rJg(){const canSee=["reveal","judging","scoring"].includes(G.phase);
+function rJg(){const canSee=["reveal","judging","scoring"].includes(G.phase);cc();
 let h=`<div class="oc"><h3>JUDGE PANEL</h3>
 <div style="font-family:var(--fm);font-size:10px;color:var(--muted);margin-bottom:8px">ANSWER: <span style="color:${canSee?"var(--green)":"var(--muted)"};font-weight:700">${canSee?esc(G.q.ans):"Hidden"}</span></div>
 <div style="font-family:var(--fm);font-size:10px;color:var(--muted);margin-bottom:8px">Consensus requires all ${G.judges.length} judges.</div>`;
-h+=G.teams.map(t=>{const d=G.judges[0].d[t.id]||null;const cl=d==="correct"?"jc":d==="incorrect"?"ji":"";
+h+=G.teams.map(t=>{const c=G.con[t.id]||"pending";const cl=c==="correct"?"jc":c==="incorrect"?"ji":"";
 return`<div class="jac ${cl}"><div style="display:flex;justify-content:space-between">
 <span style="font-family:var(--fd);font-size:13px;color:${t.col};font-weight:700">${t.sh}</span>
 ${t.ch?'<span style="font-family:var(--fm);font-size:9px;color:var(--gold)">⚡</span>':""}</div>
@@ -253,13 +280,16 @@ if(ltb==="game"){let h=fxT();
 if(G.q.text&&G.phase!=="idle"){const sh=["question","timer","time_up","reveal","judging","scoring"].includes(G.phase);
 const sa=["reveal","judging","scoring"].includes(G.phase);
 h+=`<div class="lq"><div style="font-family:var(--fd);font-size:12px;color:var(--electric);letter-spacing:3px">${esc(G.q.cat)}</div>
-<div style="display:flex;justify-content:space-between;margin-top:4px"><span style="font-family:var(--fm);font-size:9px;color:var(--muted)">Q${G.qn||1}/18</span>
+<div style="display:flex;justify-content:space-between;margin-top:4px"><span style="font-family:var(--fm);font-size:9px;color:var(--muted)">Q${curQ()||1}/18</span>
 <span style="font-family:var(--fd);font-size:14px;color:var(--gold);font-weight:700">${P[G.round]}pt</span></div>
 ${sh?`<div style="font-size:16px;line-height:1.5;margin-top:8px">${esc(G.q.text)}</div>`:""}
 ${sa?`<div style="font-family:var(--fd);font-size:16px;color:var(--green);margin-top:8px;padding-top:6px;border-top:2px solid var(--green)">✓ ${esc(G.q.ans)}</div>`:""}</div>`;}
-if(["reveal","judging","scoring"].includes(G.phase)){G.teams.forEach(t=>{const ok=t.a.t.trim().toLowerCase()===G.q.ans.trim().toLowerCase();
-h+=`<div class="lar ${ok?"lc":"lw"}"><span style="font-family:var(--fd);font-size:11px;color:${t.col};width:34px;font-weight:700">${t.sh}</span>
-<span style="flex:1;font-size:13px">${esc(t.a.t||"—")}</span>${t.ch?'<span style="font-family:var(--fm);font-size:9px;color:var(--gold)">⚡</span>':""}</div>`;});}
+if(["reveal","judging","scoring"].includes(G.phase)){G.teams.forEach(t=>{const out=teamOutcome(t);
+const cl=out==="correct"?"lc":out==="incorrect"?"lw":"";
+const badge=out==="correct"?"✓":out==="incorrect"?"✗":out==="hold"?"HOLD":out==="conflict"?"SPLIT":"PEND";
+h+=`<div class="lar ${cl}"><span style="font-family:var(--fd);font-size:11px;color:${t.col};width:34px;font-weight:700">${t.sh}</span>
+<span style="flex:1;font-size:13px">${esc(t.a.t||"—")}</span>${t.ch?'<span style="font-family:var(--fm);font-size:9px;color:var(--gold)">⚡</span>':""}
+<span style="font-family:var(--fm);font-size:9px;letter-spacing:.12em;color:${out==="correct"?"var(--green)":out==="incorrect"?"var(--fire)":out==="hold"?"var(--gold)":"var(--muted)"}">${badge}</span></div>`;});}
 if(!h)h=`<div style="text-align:center;padding:40px"><div style="font-family:var(--fd);font-size:20px;color:var(--electric)">CoBo Live</div><div style="font-size:12px;color:var(--dim);margin-top:4px;letter-spacing:2px">NEXT CATEGORY SOON</div></div>`;
 el.innerHTML=h;}
 else if(ltb==="predict"){if(!G.pred.open){el.innerHTML=`<div style="text-align:center;padding:40px"><div style="font-family:var(--fd);font-size:16px;color:var(--gold)">AUDIENCE PREDICTIONS</div><div style="font-size:12px;color:var(--dim);margin-top:4px">Opens with the next question</div></div>`;return;}
@@ -288,7 +318,7 @@ background:linear-gradient(135deg,#07152e,#0B1E3D 48%,#10264d 100%)">
 <div style="position:absolute;inset:0;background:repeating-linear-gradient(-45deg,transparent,transparent 60px,rgba(242,168,0,.06) 60px,rgba(242,168,0,.06) 61px)"></div>
 <div style="position:absolute;top:80px;left:0;right:0;text-align:center;font-family:var(--fb);font-size:26px;color:rgba(255,255,255,.58);letter-spacing:.34em">CATEGORY</div>
 <div style="font-family:var(--fd);font-size:96px;font-weight:800;color:var(--white);letter-spacing:6px;text-align:center;padding:0 80px;z-index:1;line-height:1.1">${esc(G.q.cat.toUpperCase())}</div>
-<div style="position:absolute;bottom:80px;left:0;right:0;text-align:center;font-family:var(--fb);font-size:22px;color:var(--gold);letter-spacing:.22em">Q${G.qn||1} · ${P[G.round]} POINT${P[G.round]>1?"S":""}</div></div>`;}
+<div style="position:absolute;bottom:80px;left:0;right:0;text-align:center;font-family:var(--fb);font-size:22px;color:var(--gold);letter-spacing:.22em">Q${curQ()||1} · ${P[G.round]} POINT${P[G.round]>1?"S":""}</div></div>`;}
 else if(G.phase==="challenge"){const ct=G.teams.filter(t=>t.ch);
 h=`<div style="display:flex;align-items:center;justify-content:center;height:100%;background:radial-gradient(ellipse at center,rgba(242,168,0,.14),var(--panel) 58%,var(--bg) 100%)">
 <div style="font-family:var(--fd);font-size:110px;font-weight:800;color:var(--gold);letter-spacing:8px;text-shadow:0 0 80px rgba(240,165,0,.3)">⚡ CHALLENGE</div>
@@ -308,15 +338,20 @@ else if(["reveal","judging","scoring"].includes(G.phase)){h=`<div style="display
 <div style="font-family:var(--fb);font-size:24px;color:var(--gold);letter-spacing:.34em;font-weight:700">OFFICIAL ANSWER</div>
 <div style="font-family:var(--fd);font-size:80px;font-weight:800;color:var(--white);margin-top:6px;text-shadow:0 0 40px rgba(242,168,0,.18)">${esc(G.q.ans)}</div></div>
 <div style="flex:1;display:flex;gap:16px;padding:20px 40px;align-items:stretch">${G.teams.map(t=>{
-const ok=t.a.t.trim().toLowerCase()===G.q.ans.trim().toLowerCase();
-const bg=ok?"rgba(34,197,94,.06)":"rgba(239,68,68,.04)";const brd=ok?"4px solid var(--green)":"4px solid var(--fire)";
-const delta=t.ch?(ok?C[G.round].c:C[G.round].w):(ok?P[G.round]:0);
+const out=teamOutcome(t);
+const ok=out==="correct";
+const bad=out==="incorrect";
+const pending=!(ok||bad);
+const bg=ok?"rgba(34,197,94,.06)":bad?"rgba(239,68,68,.04)":"rgba(255,255,255,.04)";
+const brd=ok?"4px solid var(--green)":bad?"4px solid var(--fire)":"4px solid var(--gold)";
+const delta=teamDelta(t);
+const label=ok?"✓ CORRECT":bad?"✗ WRONG":out==="hold"?"HOLD":out==="conflict"?"SPLIT DECISION":"PENDING";
 return`<div style="flex:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:${bg};border-top:${brd}">
 <div style="font-family:var(--fd);font-size:38px;font-weight:700;letter-spacing:3px;color:${t.col}">${t.sh}</div>
 <div style="font-family:var(--fb);font-size:42px;color:var(--white);font-weight:500">${esc(t.a.t||"—")}</div>
-<div style="font-family:var(--fd);font-size:28px;font-weight:700;letter-spacing:2px;color:${ok?"var(--green)":"var(--fire)"}">${ok?"✓ CORRECT":"✗ WRONG"}</div>
+<div style="font-family:var(--fd);font-size:28px;font-weight:700;letter-spacing:2px;color:${ok?"var(--green)":bad?"var(--fire)":out==="hold"?"var(--gold)":"var(--muted)"}">${label}</div>
 ${t.ch?'<div style="font-family:var(--fm);font-size:18px;color:var(--gold)">⚡ CHALLENGED</div>':""}
-<div style="font-family:var(--fm);font-size:22px;font-weight:700;color:${delta>=0?"var(--green)":"var(--fire)"}">${delta>=0?"+":""}${delta}</div></div>`;}).join("")}</div></div>`;}
+${delta===null?"":`<div style="font-family:var(--fm);font-size:22px;font-weight:700;color:${delta>=0?"var(--green)":"var(--fire)"}">${delta>=0?"+":""}${delta}</div>`}</div>`;}).join("")}</div></div>`;}
 else if(G.phase==="round_transition"){h=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:radial-gradient(ellipse at center,rgba(242,168,0,.12),var(--panel) 58%,var(--bg) 100%)">
 <div style="font-family:var(--fb);font-size:30px;color:var(--dim);letter-spacing:14px">NEXT UP</div>
 <div style="font-family:var(--fd);font-size:180px;font-weight:800;color:var(--electric);letter-spacing:10px;text-shadow:0 0 60px rgba(242,168,0,.28);line-height:1;margin-top:10px">ROUND ${G.round}</div>
@@ -338,7 +373,7 @@ ${G.teams.map((t,j)=>`<div style="display:flex;align-items:center;gap:12px;paddi
 ${t.ch?'<div style="font-size:16px;color:var(--gold)">⚡</div>':""}
 <div style="font-family:var(--fb);font-size:34px;font-weight:700;color:#fff">${t.score}</div></div>`).join("")}
 <div style="margin-left:auto;padding:0 26px;text-align:right">
-<div style="font-family:var(--fb);font-size:12px;color:rgba(255,255,255,.62);letter-spacing:.24em">ROUND ${G.round} · QUESTION ${G.qn||"—"}</div>
+<div style="font-family:var(--fb);font-size:12px;color:rgba(255,255,255,.62);letter-spacing:.24em">ROUND ${G.round} · QUESTION ${curQ()||"—"}</div>
 <div style="font-family:var(--fd);font-size:24px;color:var(--gold);font-weight:700;letter-spacing:.12em">NAD COLLEGE BOWL</div></div></div>
 <div style="position:absolute;top:88px;left:0;right:0;height:20px;background:linear-gradient(to bottom,rgba(0,0,0,.18),transparent)"></div>`;}window.addEventListener("load",()=>{new ResizeObserver(()=>{if(cv==="sc")rSc();if(cv==="sb")rSb();}).observe(document.getElementById("sf"));
 new ResizeObserver(()=>{if(cv==="sb")rSb();}).observe(document.getElementById("bf"));R();});
