@@ -253,6 +253,9 @@ ${t.sc.d?`<span style="margin-left:auto;font-family:var(--fm);font-size:11px;col
 <div style="margin-top:8px"><button class="ob" style="color:var(--green)" ${cs?"":"disabled"} onclick="asc()">Apply Scoring</button></div></div>`;
 
 h+=`</div><div class="op-side">`;
+h+=`<div class="oc"><h3>Screen Preview</h3>
+<div style="font-family:var(--fm);font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px">Live output thumbnail</div>
+<div class="scr-f" id="opspf" style="max-width:none"><div class="scr-i" id="opspi"></div></div></div>`;
 h+=`<div class="oc"><h3>Challenges & Answers</h3>${G.teams.map(t=>`<div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;padding:8px;border-radius:8px;background:rgba(0,0,0,.14)">
 <span style="font-family:var(--fd);font-size:13px;color:${t.col};width:40px;letter-spacing:.08em">${t.sh}</span>
 <button class="ob ${t.ch?"aon":""}" style="font-size:10px;padding:7px 10px" onclick="G.teams.find(x=>x.id==='${t.id}').ch=!G.teams.find(x=>x.id==='${t.id}').ch;R()">${t.ch?"⚡ Live":"Challenge"}</button>
@@ -266,7 +269,7 @@ h+=`<div class="oc"><h3>Match Control</h3><div style="display:flex;gap:6px;flex-
 <button class="ob" onclick="G.round=3;G.qn=0;rq();G.phase='idle';R()">Round 3</button></div>
 <button class="ob" style="color:var(--fire)" onclick="G.teams.forEach(t=>t.score=0);G.round=1;G.qn=0;rq();G.phase='idle';R()">Reset Match</button></div>`;
 h+=`</div></div>`;
-document.getElementById("opb").innerHTML=h;}
+document.getElementById("opb").innerHTML=h;renderOpScreenPreview();}
 
 function rTm(){const t=teamById(tv);document.getElementById("tmt").innerHTML=fxT();
 let h="";
@@ -339,7 +342,7 @@ else{el.innerHTML=G.teams.map(t=>`<div class="oc" style="border-left:3px solid $
 `<div style="display:flex;justify-content:space-between;padding:2px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,.03)"><span>${p.n} · ${p.y}</span>
 <span style="color:var(--dim)">${p.m}${t.on.includes(i)?'<span style="color:var(--green);font-family:var(--fm);font-size:8px"> STAGE</span>':""}</span></div>`).join("")}</div></div>`).join("");}}
 
-function rSc(){const f=document.getElementById("sf"),i=document.getElementById("si");i.style.transform=`scale(${f.clientWidth/1920})`;let h="";
+function screenMarkup(){let h="";
 if(G.phase==="idle"||!G.q.cat){h=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#10264d,var(--panel) 62%,var(--bg) 100%)">
 <div class="ptn-grid"></div><div class="ptn-glow"></div>
 <div style="position:relative;z-index:1;font-family:var(--fd);font-size:180px;font-weight:800;color:var(--white);letter-spacing:12px;line-height:1">CoBo</div>
@@ -402,7 +405,10 @@ h=`<div style="display:flex;flex-direction:column;align-items:center;justify-con
 <div style="position:relative;z-index:1;font-family:var(--fb);font-size:34px;color:var(--gold);letter-spacing:10px;font-weight:600;margin-top:10px">NAD COLLEGE BOWL 2026</div>
 <div style="position:relative;z-index:1;font-family:var(--fd);font-size:120px;font-weight:800;letter-spacing:8px;margin-top:10px;line-height:1;color:${w.col}">${w.name}</div>
 <div style="position:relative;z-index:1;font-family:var(--fm);font-size:36px;color:var(--gold);margin-top:14px">FINAL: ${w.score}</div></div>`;}
-i.innerHTML=h;}
+return h;}
+
+function rSc(){const f=document.getElementById("sf"),i=document.getElementById("si");i.style.transform=`scale(${f.clientWidth/1920})`;i.innerHTML=screenMarkup();}
+function renderOpScreenPreview(){const f=document.getElementById("opspf"),i=document.getElementById("opspi");if(!f||!i)return;i.style.transform=`scale(${f.clientWidth/1920})`;i.innerHTML=screenMarkup();}
 
 function rSb(){const f=document.getElementById("bf"),i=document.getElementById("bi");i.style.transform=`scale(${f.clientWidth/1920})`;
 i.innerHTML=`<div style="position:absolute;top:0;left:0;right:0;height:88px;background:rgba(11,30,61,.96);display:flex;align-items:center;box-shadow:0 8px 28px rgba(0,0,0,.24);border-top:4px solid var(--gold)">
