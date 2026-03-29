@@ -277,12 +277,12 @@
       position:absolute;
       left:10.5%;
       right:10.5%;
-      top:72%;
-      bottom:7%;
+      top:78%;
+      bottom:5%;
       z-index:4;
       display:grid;
       grid-template-columns:1fr 1fr;
-      gap:4px 12px;
+      gap:3px 12px;
       align-content:start;
       overflow:hidden;
     }
@@ -292,13 +292,13 @@
       grid-template-columns:1fr auto;
       align-items:baseline;
       gap:6px;
-      padding:3px 0 4px;
+      padding:1px 0 3px;
       border-bottom:1px solid var(--stat-line);
     }
 
     .stat .val {
       font-family:"Bebas Neue", sans-serif;
-      font-size:1.35rem;
+      font-size:1.2rem;
       line-height:.9;
       text-align:right;
       letter-spacing:.04em;
@@ -434,6 +434,14 @@
       .card { max-width:470px; }
     }
 
+    .nad-logo {
+      display:block;
+      width:50px;
+      margin-top:10px;
+      opacity:.93;
+      filter:drop-shadow(0 2px 8px rgba(0,0,0,.50));
+    }
+
     /* ── FUT SIZZLE ─────────────────────────────────────────── */
     @keyframes card-shimmer {
       0%   { transform:translateX(-120%) skewX(-14deg); opacity:.7; }
@@ -527,6 +535,7 @@
         <div class="role" id="role">PRES</div>
         <div class="era" id="era">ICON</div>
         <div class="alts" id="alts">ADV • ORG</div>
+        <img class="nad-logo" src="assets/nad-logo.png" alt="NAD" />
       </div>
 
       <div class="meta-rail" id="metaRail"></div>
