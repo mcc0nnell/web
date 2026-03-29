@@ -288,10 +288,10 @@
   }
   .pm2-block.show { opacity:1; transform:translateY(0); }
   .pm2-logo-text {
-    font-family:'Comic Neue',cursive; font-weight:700;
-    font-size:22px; color:#0000C0;
-    border:2px solid #0000C0; padding:6px 14px;
-    letter-spacing:2px;
+    width:64px;
+    height:64px;
+    object-fit:contain;
+    filter:drop-shadow(2px 2px 0 rgba(0,0,192,.18));
   }
   .pm2-headline {
     font-family:'Comic Neue',cursive; font-weight:700;
@@ -409,15 +409,19 @@
   .ns-hr { height:3px; background:linear-gradient(90deg,var(--win-blue),var(--win-dark),var(--win-blue)); margin:8px 0; border:0; }
   .ns-link { color:var(--win-blue); text-decoration:underline; }
   .ns-img-placeholder {
-    width:180px; height:50px; background:#ddd; border:1px solid #bbb;
-    display:flex; align-items:center; justify-content:center;
-    font-size:11px; color:#999; margin:6px 0;
+    width:180px;
+    height:50px;
+    object-fit:contain;
+    margin:6px 0;
+    image-rendering:auto;
   }
   .ns-list { margin-left:20px; line-height:1.8; }
   .ns-status-bar { font-size:11px; color:var(--win-dark); }
 
   /* ═══ BRANDING ═══ */
-  #brand-strip { position:fixed; bottom:0; left:0; right:0; height:32px; background:var(--sf-deep); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:50; border-top:2px solid var(--sf-gold); }
+  #brand-strip { position:fixed; bottom:0; left:0; right:0; height:32px; background:var(--sf-deep); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:50; border-top:2px solid var(--sf-gold); gap:12px; }
+  .brand-left { display:flex; align-items:center; gap:10px; min-width:0; }
+  .brand-logo { width:20px; height:20px; object-fit:contain; flex-shrink:0; }
   .brand-sf26 { font-family:'Outfit',sans-serif; font-weight:900; font-size:14px; color:var(--sf-glow); letter-spacing:2px; }
   .brand-live { display:flex; align-items:center; gap:6px; }
   .brand-live-dot { width:6px; height:6px; background:var(--sf-accent); border-radius:50%; animation:bPulse 2s ease-in-out infinite; }
@@ -556,7 +560,7 @@
         <div class="pm2-pasteboard">
           <div class="pm2-page" id="pm2-page">
             <div class="pm2-block" data-pm="0"><div class="pm2-clipart">🤟</div></div>
-            <div class="pm2-block" data-pm="1"><div class="pm2-logo-text">N A D</div></div>
+            <div class="pm2-block" data-pm="1"><img class="pm2-logo-text" src="assets/nad-logo.png" alt="NAD logo"></div>
             <div class="pm2-block" data-pm="2"><div class="pm2-headline">55th Biennial Conference<br>San Francisco 2026</div></div>
             <div class="pm2-block" data-pm="3"><div class="pm2-rule"></div></div>
             <div class="pm2-block" data-pm="4"><div class="pm2-detail">July 1 – 5, 2026<br>Hilton San Francisco Union Square<br>333 O'Farrell Street</div></div>
@@ -618,7 +622,7 @@
       <div class="ns-progress"><div class="ns-progress-bar" id="ns-progress"></div></div>
       <div class="w-body">
         <div class="ns-page" id="ns-page">
-          <div class="ns-block" data-ns="0"><div class="ns-img-placeholder">[ nad_logo.gif — 4.2KB ]</div></div>
+          <div class="ns-block" data-ns="0"><img class="ns-img-placeholder" src="assets/nad-logo.png" alt="NAD logo"></div>
           <div class="ns-block" data-ns="1"><div class="ns-h1">National Association of the Deaf</div></div>
           <div class="ns-block" data-ns="2"><div class="ns-hr"></div></div>
           <div class="ns-block" data-ns="3"><p><b>Welcome to NAD Online!</b> The nation's premier civil rights organization for Deaf and hard of hearing individuals.</p></div>
@@ -635,7 +639,7 @@
 
 <!-- BRANDING -->
 <div id="brand-strip">
-  <span class="brand-sf26">SF26</span>
+  <div class="brand-left"><img class="brand-logo" src="assets/nad-logo.png" alt="NAD logo"><span class="brand-sf26">SF26</span></div>
   <div class="brand-live"><div class="brand-live-dot"></div><span class="brand-live-text">LIVE</span></div>
   <span class="brand-date">JULY 2026 • SAN FRANCISCO</span>
 </div>

@@ -224,7 +224,13 @@
     background: white;
   }
 
-  .clip-art { font-size: 44px; margin-bottom: 12px; filter: saturate(1.8); }
+  .clip-art {
+    width: 72px;
+    height: 72px;
+    margin-bottom: 12px;
+    object-fit: contain;
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.18));
+  }
 
   .wordart-stars {
     color: #cc9900; font-size: 18px; letter-spacing: 8px; margin-bottom: 4px;
@@ -570,7 +576,7 @@
       <!-- Slide body -->
       <div class="window-body">
         <div class="slide-content">
-          <div class="clip-art">🏛️</div>
+          <img class="clip-art" src="assets/nad-logo.png" alt="NAD logo">
           <div class="wordart-stars">★ ★ ★ ★ ★</div>
           <div class="wordart-title">National Association<br>of the Deaf</div>
           <div class="wordart-subtitle">55th Biennial Conference</div>

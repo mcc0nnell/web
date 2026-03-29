@@ -75,10 +75,9 @@ body::after {
   display:flex; align-items:center; gap:16px; z-index:1;
 }
 .rail-logo {
-  width:44px; height:44px; background:var(--navy); border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  font-family:'Bebas Neue',sans-serif; font-size:17px; color:var(--gold);
-  letter-spacing:.04em; flex-shrink:0;
+  width:44px; height:44px; object-fit:cover; border-radius:50%;
+  flex-shrink:0;
+  filter:drop-shadow(0 2px 8px rgba(0,0,0,.28));
 }
 .rail-wordmark {
   font-family:'Bebas Neue',sans-serif; font-size:48px;
@@ -352,7 +351,7 @@ body::after {
   <!-- TOP RAIL -->
   <header class="top-rail" role="banner">
     <div class="rail-brand">
-      <div class="rail-logo" aria-hidden="true">NAD</div>
+      <img class="rail-logo" src="assets/nad-logo.png" alt="NAD logo">
       <div class="rail-wordmark">SF26 LIVE</div>
     </div>
     <div class="rail-center-text">
