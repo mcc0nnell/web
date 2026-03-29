@@ -201,7 +201,7 @@ G.con[t.id]=d.every(x=>x==="correct")?"correct":d.every(x=>x==="incorrect")?"inc
 function asc(){if(G.phase!=="scoring"||G.q.scored)return;if(Object.values(G.con).some(v=>["pending","hold","conflict"].includes(v))){alert("Resolve all first.");return;}
 G.teams.forEach(t=>{const ok=G.con[t.id]==="correct";const d=t.ch?(ok?C[G.round].c:C[G.round].w):(ok?P[G.round]:0);t.score+=d;t.sc={r:ok?"correct":"incorrect",d};});G.q.scored=true;G.qn++;R();}
 function ldQ(){const cat=D.cat.trim(),text=D.text.trim(),ans=D.ans.trim();if(!cat||!text||!ans){alert("Load a category, question, and official answer first.");return;}
-rq();G.q={cat,text,ans,lk:false,vis:false,no:G.qn+1,scored:false};G.phase="idle";R();}
+rq();G.q={cat,text,ans,lk:false,vis:false,no:G.qn+1,scored:false};G.phase="category";R();}
 function smQ(){const q=SQ[si%SQ.length];si++;D={cat:q.cat,text:q.text,ans:q.answer};ldQ();}
 
 function R(){document.getElementById("gph").textContent=G.phase.toUpperCase().replace(/_/g," ");
