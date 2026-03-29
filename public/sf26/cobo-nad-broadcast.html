@@ -224,6 +224,19 @@ h+=`<div class="oc"><h3>Question Authoring</h3><div style="display:grid;grid-tem
 <div><div class="olbl">Question</div><textarea class="otxt" id="oqt" rows="2" oninput="setDraft('text',this.value)">${esc(D.text)}</textarea>
 <div class="olbl" style="margin-top:8px">Official Answer</div><input class="oinp" id="oqa" value="${esc(D.ans)}" oninput="setDraft('ans',this.value)"></div></div></div>`;
 
+if(G.q.cat||G.q.text||G.q.ans)h+=`<div class="oc"><h3>Active Question</h3>
+<div class="olbl">Question ${curQ()||"—"} · Round ${G.round}</div>
+<div style="font-family:var(--fd);font-size:18px;letter-spacing:.08em;color:var(--gold);margin-bottom:8px">${esc(G.q.cat||"No category loaded")}</div>
+<div style="font-size:18px;line-height:1.5;color:var(--white);margin-bottom:12px">${esc(G.q.text||"No question loaded")}</div>
+<div style="padding-top:10px;border-top:1px solid var(--line-soft)">
+<div class="olbl">Official Answer</div>
+<div style="font-size:16px;line-height:1.45;color:var(--off)">${esc(G.q.ans||"No answer loaded")}</div></div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)">
+<span>Phase: ${G.phase.replace(/_/g," ")}</span>
+<span>${G.q.lk?"Locked":"Editable"}</span>
+<span>${G.q.vis?"Reveal On":"Reveal Hidden"}</span>
+</div></div>`;
+
 h+=`<div class="oc"><h3>Scores</h3>${G.teams.map(t=>`<div class="osc"><div class="osc-n" style="color:${t.col}">${t.sh}</div>
 <button class="osc-b" onclick="G.teams.find(x=>x.id==='${t.id}').score--;R()">−</button>
 <div class="osc-v">${t.score}</div>
@@ -328,9 +341,9 @@ else{el.innerHTML=G.teams.map(t=>`<div class="oc" style="border-left:3px solid $
 function rSc(){const f=document.getElementById("sf"),i=document.getElementById("si");i.style.transform=`scale(${f.clientWidth/1920})`;let h="";
 if(G.phase==="idle"||!G.q.cat){h=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#10264d,var(--panel) 62%,var(--bg) 100%)">
 <div class="ptn-grid"></div><div class="ptn-glow"></div>
-<div style="font-family:var(--fd);font-size:180px;font-weight:800;color:var(--white);letter-spacing:12px;line-height:1">CoBo</div>
-<div style="font-family:var(--fb);font-size:28px;color:var(--off);letter-spacing:.32em;margin-top:8px">NATIONAL ASSOCIATION OF THE DEAF</div>
-<div style="width:180px;height:4px;background:var(--gold);margin-top:20px;border-radius:2px"></div></div>`;}
+<div style="position:relative;z-index:1;font-family:var(--fd);font-size:180px;font-weight:800;color:var(--white);letter-spacing:12px;line-height:1">CoBo</div>
+<div style="position:relative;z-index:1;font-family:var(--fb);font-size:28px;color:var(--off);letter-spacing:.32em;margin-top:8px">NATIONAL ASSOCIATION OF THE DEAF</div>
+<div style="position:relative;z-index:1;width:180px;height:4px;background:var(--gold);margin-top:20px;border-radius:2px"></div></div>`;}
 else if(G.phase==="category"){h=`<div style="display:flex;align-items:center;justify-content:center;height:100%;position:relative;
 background:linear-gradient(135deg,#07152e,#0B1E3D 48%,#10264d 100%)">
 <div class="ptn-grid"></div><div class="ptn-glow"></div>
@@ -343,7 +356,7 @@ h=`<div style="display:flex;align-items:center;justify-content:center;height:100
 <div class="ptn-grid"></div><div class="ptn-glow"></div>
 <div class="ptn-card" style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:58%;padding:44px 72px;border-radius:28px">
 <div style="font-family:var(--fd);font-size:110px;font-weight:800;color:var(--gold);letter-spacing:8px;text-shadow:0 0 80px rgba(240,165,0,.3)">⚡ CHALLENGE</div>
-${ct.length?`<div style="position:absolute;bottom:120px;display:flex;gap:40px">${ct.map(t=>`<div style="font-family:var(--fd);font-size:40px;font-weight:700;padding:10px 30px;border-radius:6px;letter-spacing:2px;background:${t.col}20;border:2px solid ${t.col};color:${t.col}">${t.sh}</div>`).join("")}</div>`:""}</div>`;}
+${ct.length?`<div style="position:absolute;bottom:120px;display:flex;gap:40px;z-index:1">${ct.map(t=>`<div style="font-family:var(--fd);font-size:40px;font-weight:700;padding:10px 30px;border-radius:6px;letter-spacing:2px;background:${t.col}20;border:2px solid ${t.col};color:${t.col}">${t.sh}</div>`).join("")}</div>`:""}</div></div>`;}
 else if(["question","timer","time_up"].includes(G.phase)){const p=(G.tmr.rem/G.tmr.dur)*100,u=G.tmr.rem<=5;const col=u?"var(--fire)":"var(--electric)";
 h=`<div style="display:flex;flex-direction:column;height:100%;position:relative;overflow:hidden;background:var(--bg)">
 <div class="ptn-grid"></div><div class="ptn-glow"></div>
@@ -378,16 +391,16 @@ ${t.ch?'<div style="font-family:var(--fm);font-size:18px;color:var(--gold)">⚡ 
 ${delta===null?"":`<div style="font-family:var(--fm);font-size:22px;font-weight:700;color:${delta>=0?"var(--green)":"var(--fire)"}">${delta>=0?"+":""}${delta}</div>`}</div>`;}).join("")}</div></div>`;}
 else if(G.phase==="round_transition"){h=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;position:relative;overflow:hidden;background:radial-gradient(ellipse at center,rgba(242,168,0,.12),var(--panel) 58%,var(--bg) 100%)">
 <div class="ptn-grid"></div><div class="ptn-glow"></div>
-<div style="font-family:var(--fb);font-size:30px;color:var(--dim);letter-spacing:14px">NEXT UP</div>
-<div style="font-family:var(--fd);font-size:180px;font-weight:800;color:var(--electric);letter-spacing:10px;text-shadow:0 0 60px rgba(242,168,0,.28);line-height:1;margin-top:10px">ROUND ${G.round}</div>
-<div style="font-family:var(--fm);font-size:28px;color:var(--off);margin-top:14px;letter-spacing:4px">${P[G.round]} POINTS PER QUESTION</div></div>`;}
+<div style="position:relative;z-index:1;font-family:var(--fb);font-size:30px;color:var(--dim);letter-spacing:14px">NEXT UP</div>
+<div style="position:relative;z-index:1;font-family:var(--fd);font-size:180px;font-weight:800;color:var(--electric);letter-spacing:10px;text-shadow:0 0 60px rgba(242,168,0,.28);line-height:1;margin-top:10px">ROUND ${G.round}</div>
+<div style="position:relative;z-index:1;font-family:var(--fm);font-size:28px;color:var(--off);margin-top:14px;letter-spacing:4px">${P[G.round]} POINTS PER QUESTION</div></div>`;}
 else if(G.phase==="champion"){const w=[...G.teams].sort((a,b)=>b.score-a.score)[0];
 h=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,rgba(242,168,0,.16),var(--panel) 54%,var(--bg) 100%)">
 <div class="ptn-grid"></div><div class="ptn-glow"></div><div class="ptn-sheen"></div>
-<div style="font-size:140px;line-height:1">🏆</div>
-<div style="font-family:var(--fb);font-size:34px;color:var(--gold);letter-spacing:10px;font-weight:600;margin-top:10px">NAD COLLEGE BOWL 2026</div>
-<div style="font-family:var(--fd);font-size:120px;font-weight:800;letter-spacing:8px;margin-top:10px;line-height:1;color:${w.col}">${w.name}</div>
-<div style="font-family:var(--fm);font-size:36px;color:var(--gold);margin-top:14px">FINAL: ${w.score}</div></div>`;}
+<div style="position:relative;z-index:1;font-size:140px;line-height:1">🏆</div>
+<div style="position:relative;z-index:1;font-family:var(--fb);font-size:34px;color:var(--gold);letter-spacing:10px;font-weight:600;margin-top:10px">NAD COLLEGE BOWL 2026</div>
+<div style="position:relative;z-index:1;font-family:var(--fd);font-size:120px;font-weight:800;letter-spacing:8px;margin-top:10px;line-height:1;color:${w.col}">${w.name}</div>
+<div style="position:relative;z-index:1;font-family:var(--fm);font-size:36px;color:var(--gold);margin-top:14px">FINAL: ${w.score}</div></div>`;}
 i.innerHTML=h;}
 
 function rSb(){const f=document.getElementById("bf"),i=document.getElementById("bi");i.style.transform=`scale(${f.clientWidth/1920})`;
