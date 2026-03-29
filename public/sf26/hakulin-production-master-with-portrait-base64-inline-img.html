@@ -276,25 +276,27 @@
       position:absolute;
       left:10.5%;
       right:10.5%;
-      bottom:17%;
+      top:75%;
+      bottom:10%;
       z-index:4;
       display:grid;
       grid-template-columns:1fr 1fr;
-      gap:12px 20px;
+      gap:5px 16px;
+      align-content:center;
     }
 
     .stat {
       display:grid;
-      grid-template-columns:52px 1fr;
+      grid-template-columns:36px 1fr;
       align-items:baseline;
-      gap:10px;
-      padding-bottom:4px;
+      gap:7px;
+      padding-bottom:3px;
       border-bottom:1px solid var(--stat-line);
     }
 
     .stat .val {
       font-family:"Bebas Neue", sans-serif;
-      font-size:2.05rem;
+      font-size:1.35rem;
       line-height:.9;
       text-align:right;
       letter-spacing:.04em;
@@ -302,9 +304,9 @@
 
     .stat .lab {
       font-family:"Bebas Neue", sans-serif;
-      font-size:1rem;
+      font-size:.72rem;
       line-height:1;
-      letter-spacing:.12em;
+      letter-spacing:.10em;
       text-transform:uppercase;
       color:rgba(255,255,255,.93);
     }
