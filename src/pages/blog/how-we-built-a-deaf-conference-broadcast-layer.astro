@@ -1,0 +1,339 @@
+---
+import '../../styles/global.css';
+
+const title = 'How We Built a Deaf Conference Broadcast Layer';
+const description =
+  'What started as a conference website became live civic infrastructure — and nearly broke in the process. Lessons from the National Association of the Deaf’s 58th Biennial Conference in San Francisco.';
+const publishDate = 'July 6, 2026';
+const url = 'https://mcc0nnell.org/blog/how-we-built-a-deaf-conference-broadcast-layer';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} — Robert McConnell</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0F1520" />
+    <meta name="color-scheme" content="dark" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content={url} />
+    <meta property="og:image" content="https://mcc0nnell.org/blog/access-channel-26.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="canonical" href={url} />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='16' fill='%231B2333'/><text x='50' y='66' font-size='52' text-anchor='middle' fill='%23DC2626' font-family='Georgia,serif'>M</text></svg>" />
+  </head>
+
+  <body>
+    <!-- ============ Navigation ============ -->
+    <nav class="nav scrolled" id="nav">
+      <div class="nav__inner">
+        <a href="/" class="nav__brand">mcc0nnell.org</a>
+        <button class="nav__toggle" id="navToggle" type="button" aria-label="Toggle menu">Menu</button>
+        <div class="nav__links" id="navLinks">
+          <a href="/#work">Work</a>
+          <a href="/#writing">Writing</a>
+          <a href="/blog/">Journal</a>
+          <a href="/#sf26">SF26</a>
+          <a href="/#connect">Connect</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ============ Article ============ -->
+    <article class="article">
+      <header class="article__head">
+        <a href="/blog/" class="article__back">&larr; Journal</a>
+        <div class="article__meta">
+          <span class="label">Field Notes</span>
+          <span>{publishDate}</span>
+          <span>12 min read</span>
+        </div>
+        <h1 class="article__title">How We Built a Deaf<br />Conference Broadcast Layer</h1>
+        <p class="article__dek">
+          What started as a conference website became live civic infrastructure &mdash; and nearly
+          broke in the process. This is what we learned at the National Association of the Deaf&rsquo;s
+          58th Biennial Conference in San Francisco, and what it means for the future of Deaf civic events.
+        </p>
+        <hr class="article__rule" />
+      </header>
+
+      <figure class="article-fig article-fig--wide article__lead">
+        <img
+          src="/blog/access-channel-26.jpg"
+          width="1536"
+          height="1024"
+          alt="A retro public-access television interface titled SF26 Access Channel 26, with a channel guide listing Prevue Guide, WeatherStar 4000, VHS Archive, Amiga AVTool and Hotel Info, showing a San Francisco bridge welcome bumper."
+        />
+        <figcaption>
+          Access Channel 26 &mdash; the broadcast layer&rsquo;s public face, built in the community&rsquo;s
+          own media lineage: public-access frame language, station bugs, VCR-era transitions, and a
+          Video Toaster sensibility.
+        </figcaption>
+      </figure>
+
+      <div class="article__body">
+        <h2>The problem nobody names</h2>
+        <p>
+          Every large Deaf conference runs on the same invisible machinery: a hotel AV vendor, a stack
+          of PowerPoints, a schedule PDF, and a small group of exhausted volunteers translating between
+          the stage, the screens, and the audience. The result is usually functional and forgettable.
+          The screens show slides. The archive footage, if any exists, plays as a nostalgia reel. The
+          operational knowledge evaporates the moment the ballroom empties.
+        </p>
+        <p>
+          For a community whose history <em>is</em> a media history &mdash; public-access television,
+          Deaf Mosaic, decades of videotape that institutions barely preserved &mdash; this is a strange
+          kind of poverty. The culture is broadcast-native. The conferences are not.
+        </p>
+        <p>
+          Going into SF26, the 58th Biennial NAD Conference in San Francisco, we set out to build
+          something different: not a website with a schedule on it, but a coherent broadcast layer for
+          the entire event.
+        </p>
+
+        <h2>What a broadcast layer actually is</h2>
+        <p>
+          By the time the conference ended, the system &mdash; a JSON-driven platform running on
+          Cloudflare and Astro &mdash; was doing far more than wayfinding for roughly 1,100 attendees.
+          It was driving:
+        </p>
+        <ul>
+          <li>Left and right stage display outputs in the Grand Ballroom</li>
+          <li>Opening Ceremony and Cultural Extravaganza graphics</li>
+          <li>Archival video framing and interstitials</li>
+          <li>Speaker cue cards and lower thirds</li>
+          <li>Sponsor and identity surfaces</li>
+          <li>Operator routes for live control</li>
+          <li>Emergency slates and fallback screens</li>
+          <li>Workshop and CEU workflow experiments</li>
+        </ul>
+
+        <figure class="article-fig article-fig--wide">
+          <img
+            src="/blog/ballroom-broadcast-booth.jpg"
+            width="1350"
+            height="1800"
+            alt="A dimly lit production booth at the back of the Grand Ballroom: multiview monitors, a video switcher and control surface, laptops, and the main stage screen ahead showing a speaker slate."
+          />
+          <figcaption>
+            The production booth at the back of the Grand Ballroom, driving the room&rsquo;s stage
+            displays, multiviews, and cue slates from a single system rather than five vendors and a
+            shared Dropbox.
+          </figcaption>
+        </figure>
+
+        <p>
+          The unifying idea: a Deaf conference can have a single system that combines cultural memory,
+          accessibility, stage production, attendee information, and operational control. Not five
+          vendors and a shared Dropbox. One layer.
+        </p>
+
+        <figure class="article-fig article-fig--wide">
+          <img
+            src="/blog/ballroom-mayor-lurie.jpg"
+            width="1350"
+            height="1800"
+            alt="The main ballroom screen displaying a speaker identity graphic for Mayor Daniel Lurie, Mayor of San Francisco, with a lower-third title, viewed from the operator position."
+          />
+          <figcaption>
+            A speaker identity surface on the main screen &mdash; lower thirds and cue cards generated
+            from the same content layer that fed wayfinding, archive, and sponsor screens.
+          </figcaption>
+        </figure>
+
+        <p>
+          The visual identity leaned deliberately into the community&rsquo;s own media lineage &mdash;
+          public-access frame language, station bugs, VCR-era transitions, an &ldquo;Access Channel
+          26&rdquo; sensibility drawn from the Amiga and Video Toaster aesthetic that powered so much
+          early Deaf television. It read as culturally specific rather than generic conference design,
+          and it held together under real production pressure.
+        </p>
+
+        <h2>The moment we knew it worked</h2>
+        <p>
+          The conference&rsquo;s theme, in retrospect, was resurrection. We brought archival Deaf media
+          back into the room &mdash; Byron Benton Burnes, Douglas Tilden, Silent Perspectives /
+          Deaf Mosaic energy &mdash; not as museum clips, but framed inside a living broadcast
+          environment, staged as present-tense civic memory.
+        </p>
+
+        <figure class="article-fig article-fig--wide">
+          <img
+            src="/blog/ballroom-nad-theme.jpg"
+            width="1350"
+            height="1800"
+            alt="The main ballroom screen showing the 58th Biennial National Association of the Deaf Conference theme graphic, a colorful Golden Gate Bridge illustration, with the production booth and audience in the foreground."
+          />
+          <figcaption>
+            Archival media reframed as present-tense civic memory &mdash; the 58th Biennial theme
+            staged inside a living broadcast environment, not played as a nostalgia reel.
+          </figcaption>
+        </figure>
+
+        <p>
+          The proof point came from David Peterson, who had hosted the original Burnes and Tilden
+          newscast clips decades ago. He was in the audience. He was, by all accounts, stunned &mdash;
+          asking around to find out who had done this. Someone with genuine cultural context looked at
+          the screens and recognized that the archive had been <em>reactivated</em>, not merely replayed.
+        </p>
+        <p>
+          You cannot buy that validation. It told us the core concept &mdash; archival media as live
+          civic infrastructure &mdash; is real.
+        </p>
+
+        <h2>What broke</h2>
+        <p>
+          An honest account matters more than a victory lap, because several things failed or nearly
+          failed, and every failure points at what the next version must be.
+        </p>
+
+        <figure class="article-fig article-fig--portrait">
+          <img
+            src="/blog/access26-mobile.png"
+            width="647"
+            height="1400"
+            alt="The Access26 mobile app on a phone, showing the Deaf Media channel (26.4) with a diagnostic overlay reporting a media error, origin unavailable, and a fallback message that the now/next data is still available below."
+          />
+          <figcaption>
+            Fallback in the wild: the Access26 mobile channel showing a source outage on 26.4 &mdash;
+            the diagnostic overlay and now/next data kept the channel legible when the origin dropped.
+          </figcaption>
+        </figure>
+
+        <p>
+          <strong>CEU tracking almost collapsed.</strong> The QR-based attendance system for continuing
+          education credits &mdash; badge payloads, scanner validation, check-in/check-out logic &mdash;
+          proved too fragile for live use. Validation rules kept rejecting real scans. The save was a
+          mid-conference pivot to a radically simpler model: capture the badge ID with a timestamp,
+          associate it with a workshop, export the data, reconcile later. It worked, barely. For a
+          professional conference, CEU records are a legal and financial obligation, not a
+          nice-to-have. This must be a first-class, scanner-tested subsystem next time &mdash; with a
+          test harness, offline queuing, and operator feedback &mdash; not a last-minute patch.
+        </p>
+        <p>
+          <strong>The AV handoff was underdocumented until too late.</strong> The system was powerful
+          but not AV-obvious. The production vendor had legitimate questions about display outputs,
+          resolutions, and signal flow that should have been answered by a quick-start packet weeks
+          earlier, not in hallway conversations during load-in.
+        </p>
+        <p>
+          <strong>Content state was fragile.</strong> The machinery for driving screens was solid; the
+          actual JSON content feeding it was too easy to corrupt or let drift. Names, titles, timings,
+          and stage-appropriate wording needed repeated manual cleanup. Schema validation, preview
+          dashboards, and a content-freeze workflow would have prevented most of it.
+        </p>
+        <p>
+          <strong>Security boundaries got loose.</strong> Under production speed, the separation between
+          public routes, stage routes, and operator routes blurred. Nothing catastrophic happened, but
+          the architecture made it <em>possible</em> to accidentally put an admin surface on a ballroom
+          screen. That possibility has to be engineered away.
+        </p>
+        <p>
+          <strong>And the biggest failure was human architecture.</strong> One person served
+          simultaneously as showrunner, systems architect, AV translator, content producer, archivist,
+          emergency developer, and operator support. The system survived because that person showed up
+          in double overtime, repeatedly. Heroics are not an operating model. They&rsquo;re a warning.
+        </p>
+
+        <h2>The real product</h2>
+        <p>
+          Here is the insight worth stating plainly: this is not &ldquo;conference website work,&rdquo;
+          and positioning it that way undersells everything.
+        </p>
+        <p>
+          What SF26 prototyped is an <strong>Access Conference Broadcast Layer</strong> &mdash; a
+          reusable platform sitting at the intersection of SaaS, broadcast production, conference
+          operations, media preservation, sponsorship inventory, and accessibility infrastructure. The
+          natural market is the civic ecosystem this community already runs: NAD affiliates, state
+          associations, Deaf in Government, Deaf Studies programs, interpreter and accessibility
+          conferences, federal convenings.
+        </p>
+        <p>
+          The value stack is legible: a platform layer (screens, rundowns, operator routes, AV
+          documentation), a creative layer (stage packages, archival treatments, tribute and sponsor
+          media), sponsorship inventory that turns conference screens into fundable surfaces, and a
+          post-event archive package that ensures the media produced at a conference doesn&rsquo;t die
+          with the conference. Each layer maps to revenue, and each maps to grant-fundable
+          public-interest work: digital preservation, language access, civic participation, Deaf media
+          history.
+        </p>
+
+        <h2>From resurrection to what&rsquo;s next</h2>
+        <p>
+          SF26 was about the past returning &mdash; ghosts brought back into the room, and welcomed there.
+        </p>
+        <p>
+          The next iteration, at Deaf in Government&rsquo;s 2027 National Training Conference in
+          Washington, should not replay that. DIG&rsquo;s thesis is different: <strong>the now and the
+          possible.</strong> Deaf civic infrastructure, AI and accessibility, language access as a
+          design authority, federal policy power, youth leadership, Deaf technologists building in
+          public. The visual language shifts accordingly &mdash; from hotel-channel retro to civic
+          command center: hearing-room aesthetics, federal wayfinding, live dashboards, the Gallaudet
+          protest lineage rendered as operational power.
+        </p>
+        <blockquote>
+          SF26 said: <em>we remember.</em><br />
+          DC27 should say: <em>we are not done.</em>
+        </blockquote>
+
+        <h2>Why this matters</h2>
+        <p>
+          Accessibility work is too often framed as accommodation &mdash; a service bolted onto someone
+          else&rsquo;s event. SF26 demonstrated the inversion: a Deaf conference where the broadcast
+          layer, the archive, the stage, and the operations were designed from Deaf media culture
+          outward, and where the result was <em>better production</em> than the generic alternative,
+          not a compromise on it.
+        </p>
+        <p>
+          The prototype passed its first live-fire test. Parts of it were held together by
+          improvisation, and we&rsquo;re documenting every one of those saves so they become runbooks
+          instead of legends. That&rsquo;s the whole project now: converting heroics into infrastructure
+          &mdash; so the next conference, and the one after that, inherits a system instead of a story.
+        </p>
+      </div>
+
+      <footer class="article__foot">
+        <p>
+          SF26 ran June 30 &ndash; July 5, 2026 at the San Francisco Hilton Union Square, serving
+          approximately 1,100 attendees of the National Association of the Deaf&rsquo;s 58th Biennial
+          Conference.
+        </p>
+      </footer>
+    </article>
+
+    <!-- ============ Footer ============ -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer__inner">
+          <span class="footer__brand">mcc0nnell.org</span>
+          <span class="footer__note">Built with quiet authority.</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ============ Scripts ============ -->
+    <script>
+      // Mobile nav toggle
+      const toggle = document.getElementById('navToggle');
+      const links = document.getElementById('navLinks');
+      toggle?.addEventListener('click', () => {
+        links?.classList.toggle('open');
+      });
+      links?.querySelectorAll('a').forEach((a) => {
+        a.addEventListener('click', () => links?.classList.remove('open'));
+      });
+    </script>
+  </body>
+</html>
