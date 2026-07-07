@@ -98,15 +98,16 @@ const url = 'https://mcc0nnell.org/blog/how-we-built-a-deaf-conference-broadcast
           kind of poverty. The culture is broadcast-native. The conferences are not.
         </p>
         <p>
-          Going into SF26, the 58th Biennial NAD Conference in San Francisco, we set out to build
+          Going into SF26, the 58th Biennial <a href="https://www.nad.org" target="_blank" rel="noopener noreferrer">NAD</a> Conference in San Francisco, we set out to build
           something different: not a website with a schedule on it, but a coherent broadcast layer for
           the entire event.
         </p>
 
         <h2>What a broadcast layer actually is</h2>
         <p>
-          By the time the conference ended, the system &mdash; a JSON-driven platform running on
-          Cloudflare and Astro &mdash; was doing far more than wayfinding for roughly 1,100 attendees.
+          By the time the conference ended, the system &mdash;
+          <a href="https://sf26.live" target="_blank" rel="noopener noreferrer">a JSON-driven platform running on
+          Cloudflare and Astro</a> &mdash; was doing far more than wayfinding for roughly 1,100 attendees.
           It was driving:
         </p>
         <ul>
@@ -246,6 +247,23 @@ const url = 'https://mcc0nnell.org/blog/how-we-built-a-deaf-conference-broadcast
           emergency developer, and operator support. The system survived because that person showed up
           in double overtime, repeatedly. Heroics are not an operating model. They&rsquo;re a warning.
         </p>
+        <p>
+          None of this worked in a vacuum, and one partner deserves singling out.
+          <a href="https://encoreglobal.com" target="_blank" rel="noopener noreferrer">Encore</a>,
+          our production vendor at the Hilton, met an unusual ask with unusual generosity. When we
+          proposed driving the room from a live, browser-rendered graphics layer &mdash; not a stack
+          of pre-baked slides, but HTML rendering in real time &mdash; the answer was simply that they
+          could ingest whatever signal we sent, key our lower thirds either way, and had the equipment
+          and crew in the room to run it. That one yes is what made the broadcast layer possible on
+          professional hardware. From there the team leaned in: full stage and house lighting control
+          in Grand Ballroom B so signing stayed lit and legible, a vibrotactile subwoofer rig built
+          around an accessibility use case most vendors have never been asked for, and a project
+          manager who worked our Cloudflare-hosted content system in real time and turned last-minute
+          Cultural Extravaganza media around the same afternoon it arrived. The documentation gap noted
+          above was ours, not theirs &mdash; the questions their crew raised at load-in were exactly the
+          right ones. A broadcast layer this ambitious needs a floor team willing to treat it as a
+          partner rather than a problem, and that is what we had.
+        </p>
 
         <h2>The real product</h2>
         <p>
@@ -257,7 +275,7 @@ const url = 'https://mcc0nnell.org/blog/how-we-built-a-deaf-conference-broadcast
           reusable platform sitting at the intersection of SaaS, broadcast production, conference
           operations, media preservation, sponsorship inventory, and accessibility infrastructure. The
           natural market is the civic ecosystem this community already runs: NAD affiliates, state
-          associations, Deaf in Government, Deaf Studies programs, interpreter and accessibility
+          associations, <a href="https://deafingov.org" target="_blank" rel="noopener noreferrer">Deaf in Government</a>, Deaf Studies programs, interpreter and accessibility
           conferences, federal convenings.
         </p>
         <p>
