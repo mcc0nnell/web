@@ -604,6 +604,128 @@ ul, ol { list-style: none; }
   color: var(--fg);
 }
 
+/* Production — curated pieces, 60/40 editorial rhythm */
+.sf26__production {
+  margin-top: clamp(56px, 8vw, 96px);
+}
+
+.sf26__production-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sf26__production-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+}
+
+@media (min-width: 768px) {
+  .sf26__production-grid {
+    grid-template-columns: 3fr 2fr;
+  }
+}
+
+.sf26__piece-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sf26__piece {
+  display: block;
+  background: var(--bg-surface);
+  padding: clamp(20px, 2.5vw, 32px);
+  color: var(--fg);
+  transition: background 0.2s;
+}
+
+.sf26__piece:hover {
+  background: var(--bg-elevated);
+  color: var(--fg);
+}
+
+.sf26__piece-stack .sf26__piece {
+  flex: 1;
+}
+
+.sf26__piece-num {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--red);
+  margin-bottom: 14px;
+}
+
+.sf26__piece-title {
+  font-family: var(--serif);
+  font-weight: 400;
+  line-height: 1.2;
+  margin-bottom: 10px;
+}
+
+.sf26__piece-desc {
+  color: var(--fg-secondary);
+  line-height: 1.55;
+  font-size: 14px;
+  max-width: 42ch;
+}
+
+.sf26__piece--featured {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 320px;
+}
+
+.sf26__piece--featured .sf26__piece-title {
+  font-size: clamp(28px, 3.5vw, 44px);
+}
+
+.sf26__piece--featured .sf26__piece-desc {
+  font-size: 16px;
+  max-width: 44ch;
+}
+
+.sf26__piece:not(.sf26__piece--featured) .sf26__piece-title {
+  font-size: clamp(18px, 2vw, 22px);
+}
+
+.sf26__piece-more {
+  margin-top: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--red);
+}
+
+.sf26__archive-link {
+  display: inline-block;
+  margin-top: 24px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.sf26__archive-link:hover {
+  color: var(--fg-secondary);
+  border-color: var(--fg-muted);
+}
+
 /* Number watermark */
 .sf26__watermark {
   position: absolute;

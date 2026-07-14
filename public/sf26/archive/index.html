@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0F1520" />
+<meta name="color-scheme" content="dark" />
+<title>SF26 — Full Production Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0F1520;
+    --bg-surface: #161D2B;
+    --bg-elevated: #1E2738;
+    --red: #DC2626;
+    --fg: #E8ECF1;
+    --fg-secondary: rgba(232, 236, 241, 0.7);
+    --fg-muted: rgba(232, 236, 241, 0.45);
+    --border: rgba(232, 236, 241, 0.08);
+    --serif: 'Instrument Serif', Georgia, serif;
+    --sans: 'Outfit', system-ui, sans-serif;
+    --mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: clamp(56px, 10vw, 120px) clamp(16px, 3vw, 32px);
+  }
+  a.back {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    text-decoration: none;
+    margin-bottom: 40px;
+  }
+  a.back:hover { color: var(--fg-secondary); }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-style: italic;
+    font-size: clamp(32px, 5vw, 52px);
+    margin-bottom: 12px;
+  }
+  .dek {
+    color: var(--fg-secondary);
+    max-width: 55ch;
+    margin-bottom: clamp(40px, 6vw, 64px);
+  }
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .item {
+    display: block;
+    background: var(--bg-surface);
+    padding: clamp(20px, 3vw, 28px);
+    text-decoration: none;
+    color: var(--fg);
+    transition: background 0.2s;
+  }
+  .item:hover { background: var(--bg-elevated); }
+  .item h3 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+  .item p {
+    color: var(--fg-secondary);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/#sf26">&larr; Back to SF26</a>
+    <h1><em>Full</em> production archive</h1>
+    <p class="dek">Supporting tools and early builds from the SF26 production run, kept here for reference.</p>
+
+    <div class="list">
+      <a class="item" href="/sf26/flipboard/">
+        <h3>Session Flipboard</h3>
+        <p>Rotating display board for session titles, rooms, and start times.</p>
+      </a>
+      <a class="item" href="/sf26/nad-ticker.html">
+        <h3>News Ticker</h3>
+        <p>Scrolling announcements and updates for lobby and hallway displays.</p>
+      </a>
+      <a class="item" href="/sf26/sf26-retro-loop-v3.html">
+        <h3>Pre-Conference Loop</h3>
+        <p>Ambient countdown reel that ran in the days leading up to the event.</p>
+      </a>
+      <a class="item" href="/sf26/sf26-live-shell-v1.html">
+        <h3>Broadcast Shell, Early Build</h3>
+        <p>An earlier iteration of the live broadcast frame, kept for reference.</p>
+      </a>
+      <a class="item" href="/sf26/sf26-live-patterns-v2.html">
+        <h3>Background Patterns</h3>
+        <p>Motion backgrounds used across the live broadcast and signage displays.</p>
+      </a>
+      <a class="item" href="/sf26/hakulin-production-master-with-portrait-base64-inline-img.html">
+        <h3>Hakulin Tribute Card</h3>
+        <p>A commemorative card produced for the conference.</p>
+      </a>
+    </div>
+  </div>
+</body>
+</html>
