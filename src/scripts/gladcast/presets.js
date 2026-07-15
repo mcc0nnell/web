@@ -93,7 +93,7 @@ export const CHANNELS = [
     presets: [
       { name: 'Legal ID', ...P('testpattern', { p1: 0.0, intensity: 0.6, overlay: { slate: 'legal' } }) },
       { name: 'Technical Difficulties', ...P('testpattern', { p1: 1.0, overlay: { slate: 'technical' } }) },
-      { name: 'Signal From Eagle Rock', ...P('signalacq', { p1: 0.2, p3: 0.5, overlay: { slate: null, bugText: 'EAGLE ROCK TX' }, routes: [['lfo1', 'A.p1', 0.4]], caption: '[cue:acquire] Signal from *Eagle Rock* — GLADcast is on the air.' }) },
+      { name: 'Signal From Eagle Rock', ...P('signalacq', { p1: 0.2, p3: 0.5, overlay: { slate: null, bugText: 'EAGLE ROCK CA' }, routes: [['lfo1', 'A.p1', 0.4]], caption: '[cue:acquire] Signal from *Eagle Rock* — GLADcast is on the air.' }) },
       { name: 'WeatherStar Eagle Rock', ...P('vectorgrid', { p3: 0.35, p4: 0.2, overlay: { clock: true, crawlText: 'EAGLE ROCK — CLEAR 74° · DOWNTOWN LA 78° · AIR QUALITY GOOD · NO ACTIVE ALERTS · GLADCAST WEATHER', bugText: 'WEATHERSTAR' } }) },
     ],
   },
