@@ -24,10 +24,14 @@ npm run preview  # preview production build
 ```
 src/
   pages/
-    index.astro   # entire site — single page
+    index.astro     # main portfolio page
+    gladcast.astro  # /gladcast — live broadcast visual instrument (see GLADCAST.md)
+  scripts/
+    gladcast/       # GLADcast engine: WebGL2 generators, modulation, inputs, CG
   styles/
-    global.css    # all styles
-public/           # static assets (images, video, etc.)
+    global.css      # portfolio styles
+    gladcast.css    # GLADcast console styles
+public/             # static assets (images, video, etc.)
 ```
 
 ## Design System
