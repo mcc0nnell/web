@@ -1,0 +1,44 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gladcast",
+  // Source entry; the Cloudflare Vite plugin (via @astrojs/cloudflare v13+)
+  // bundles it and emits the deployable config under dist/.
+  "main": "./src/worker.ts",
+  "compatibility_date": "2026-04-04",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "vars": {
+    // Operator boundary, inherited from SF26's model: front /api/ops/command
+    // with Cloudflare Access and set GLADCAST_ACCESS_TEAM_DOMAIN +
+    // GLADCAST_ACCESS_AUD to cryptographically verify identities.
+    //
+    // Guard is disabled by default while GLADcast has no Access application
+    // yet — every command route is open. Set to "false" (or remove) and
+    // configure Access before any real production use. Each use is logged
+    // (ops.guard_disabled).
+    "GLADCAST_OPERATOR_GUARD_DISABLED": "true"
+    // "GLADCAST_OPERATOR_TRUST_ACCESS": "true",
+    // "GLADCAST_ACCESS_TEAM_DOMAIN": "https://<team>.cloudflareaccess.com",
+    // "GLADCAST_ACCESS_AUD": "<application-audience-tag>",
+    // "GLADCAST_OPERATOR_TOKEN": "<shared token for header/cookie auth>"
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "OPS_ROOM",
+        "class_name": "RoomDO"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["RoomDO"]
+    }
+  ]
+}

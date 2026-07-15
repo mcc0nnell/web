@@ -1,0 +1,59 @@
+---
+// GLADcast console — the performable broadcast instrument.
+// Append ?room=<slug> to bind the SYNC button to a specific RoomDO room
+// (default: main-hall). Outputs mirror at /output/<slug>.
+import '../styles/gladcast.css';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="GLADcast — a real-time demoscene visual synthesizer for live Deaf broadcasting. Successor to SF26."
+    />
+    <meta name="robots" content="noindex" />
+    <title>GLADcast — Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Outfit:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap"
+    />
+  </head>
+  <body>
+    <noscript>
+      <p style="padding: 2rem; font-family: monospace;">
+        GLADcast is a live visual instrument and requires JavaScript and WebGL2.
+      </p>
+    </noscript>
+    <div id="gladcast-root">
+      <p class="gc-booting">ACQUIRING SIGNAL…</p>
+    </div>
+
+    <script>
+      import { boot } from '../scripts/gladcast/main.js';
+      const root = document.getElementById('gladcast-root');
+      try {
+        boot(root);
+      } catch (err) {
+        root.innerHTML =
+          '<p style="padding:2rem;font-family:monospace;color:#DC2626;">GLADcast could not start: ' +
+          (err && err.message ? err.message : err) +
+          '<br>WebGL2 is required.</p>';
+        console.error(err);
+      }
+    </script>
+
+    <style>
+      .gc-booting {
+        font-family: 'IBM Plex Mono', monospace;
+        color: #8a93a6;
+        padding: 2rem;
+        letter-spacing: 0.2em;
+      }
+    </style>
+  </body>
+</html>
