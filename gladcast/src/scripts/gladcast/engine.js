@@ -150,6 +150,9 @@ export class Engine {
     this.mediaTex = this.makeTexture();
     this.waveTex = this.makeTexture();
     this.hasMedia = false;
+    this._locCache = new Map();       // program → (name → uniform location)
+    this._lastMediaSource = null;     // static-source upload dedupe
+    this._lastMediaStatic = false;
 
     this.frameMs = 0;
   }
@@ -215,6 +218,21 @@ export class Engine {
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
 
+  /** Cached uniform-location lookup — no per-frame getUniformLocation. */
+  loc(prog, name) {
+    let names = this._locCache.get(prog);
+    if (!names) {
+      names = new Map();
+      this._locCache.set(prog, names);
+    }
+    let l = names.get(name);
+    if (l === undefined) {
+      l = this.gl.getUniformLocation(prog, name);
+      names.set(name, l);
+    }
+    return l;
+  }
+
   getGenProgram(gen) {
     if (!this.genPrograms.has(gen.id)) {
       this.genPrograms.set(gen.id, this.compile(VERT, GEN_HEADER + gen.frag));
@@ -222,10 +240,23 @@ export class Engine {
     return this.genPrograms.get(gen.id);
   }
 
-  /** Upload a video/canvas/image element as the shared media source texture. */
-  updateMedia(source) {
+  /**
+   * Upload a video/canvas/image element as the shared media source texture.
+   * Static sources (images, decoded canvases) upload once and are skipped
+   * on subsequent frames; dynamic sources (video, camera) upload per frame.
+   */
+  updateMedia(source, isStatic = false) {
     const gl = this.gl;
-    if (!source) { this.hasMedia = false; return; }
+    if (!source) {
+      this.hasMedia = false;
+      this._lastMediaSource = null;
+      return;
+    }
+    if (isStatic && this._lastMediaStatic && this._lastMediaSource === source && this.hasMedia) {
+      return;
+    }
+    this._lastMediaSource = source;
+    this._lastMediaStatic = isStatic;
     try {
       gl.bindTexture(gl.TEXTURE_2D, this.mediaTex);
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -261,7 +292,7 @@ export class Engine {
     gl.bindFramebuffer(gl.FRAMEBUFFER, target ? target.fbo : null);
     gl.viewport(0, 0, this.width, this.height);
     gl.useProgram(prog);
-    const u = (n) => gl.getUniformLocation(prog, n);
+    const u = (n) => this.loc(prog, n);
     gl.uniform2f(u('u_res'), this.width, this.height);
     gl.uniform1f(u('u_time'), ctx.time);
     gl.uniform1f(u('u_mode'), params.mode);
@@ -294,7 +325,7 @@ export class Engine {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.fboMix.fbo);
     gl.viewport(0, 0, this.width, this.height);
     gl.useProgram(this.mixProg);
-    let u = (n) => gl.getUniformLocation(this.mixProg, n);
+    let u = (n) => this.loc(this.mixProg, n);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.fboA.tex);
     gl.uniform1i(u('u_a'), 0);
@@ -307,7 +338,7 @@ export class Engine {
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.fboOut.fbo);
     gl.useProgram(this.postProg);
-    u = (n) => gl.getUniformLocation(this.postProg, n);
+    u = (n) => this.loc(this.postProg, n);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.fboMix.tex);
     gl.uniform1i(u('u_src'), 0);
@@ -346,7 +377,7 @@ export class Engine {
     gl.useProgram(this.blitProg);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.uniform1i(gl.getUniformLocation(this.blitProg, 'u_src'), 0);
+    gl.uniform1i(this.loc(this.blitProg, 'u_src'), 0);
     this.drawQuad();
   }
 }

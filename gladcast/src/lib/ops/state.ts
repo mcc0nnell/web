@@ -88,10 +88,30 @@ export type RoomState = {
   // Opaque CoBo scoring payload synced across devices via SET_COBO.
   // Optional so snapshots persisted before this field existed stay valid.
   cobo?: Record<string, unknown> | null
-  // Opaque GLADcast instrument payload synced via SET_VISUAL: decks, mix,
-  // fx, overlay, captions, modulation routes. Kept opaque so the ops spine
-  // stays agnostic of the instrument's schema (same doctrine as `cobo`).
+  // Opaque GLADcast instrument payload synced via SET_VISUAL / TAKE_VISUAL:
+  // decks, mix, fx, overlays, captions, modulation config + routes. Kept
+  // opaque so the ops spine stays agnostic of the instrument's schema (same
+  // doctrine as `cobo`); receivers validate it via the versioned client
+  // schema (src/scripts/gladcast/schema.js).
   visual?: Record<string, unknown> | null
+  // Shared transport clock: {running, epochMs, positionAtEpoch, bpm, seed,
+  // sequence}. Time-based visuals derive from this, never from local clocks.
+  transport?: Record<string, unknown> | null
+  // Live control signals (audio/motion/MIDI/OSC/XY). EPHEMERAL: broadcast
+  // but never persisted — see EPHEMERAL_COMMAND_TYPES in worker/room-do.ts.
+  controls?: Record<string, unknown> | null
+  // Synchronized media descriptor (never binary media — a URL + playback
+  // intent). Validated client-side; the spine only bounds its size.
+  media?: Record<string, unknown> | null
+  // Synchronized output format: {aspect, width, height, fps}.
+  output?: Record<string, unknown> | null
+  // Emergency override layer. Independent of `visual` so emergency
+  // information renders even when visual state or media is broken.
+  emergency?: Record<string, unknown> | null
+  // Monotonic instrument event marker (TAKE / envelope trigger), stamped
+  // with the transport position it applies at, so every output fires the
+  // same event at the same musical moment.
+  visualEvent?: {seq: number; kind: string; at: number} | null
   // Showcaller run-of-show layer. Optional so snapshots persisted before this
   // field existed stay valid; getShowState() materializes a default.
   show?: ShowState

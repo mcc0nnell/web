@@ -18,6 +18,10 @@ import { CHANNELS, SIGNATURE_PRESETS, loadUserPresets, saveUserPresets } from '.
 import { OutputManager, ASPECTS } from './output.js';
 import { el, section, button, select, slider, knob, xyPad, crossfader, meter } from './ui.js';
 import { OpsSync, collectVisual } from './sync.js';
+import { createTransport, retimeTransport, transportPosition } from './transport.js';
+import { drawSeed } from './prng.js';
+import { validateControls, ASPECT_PRESETS } from './schema.js';
+import { materialChange } from './signals.js';
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
@@ -104,6 +108,41 @@ export function boot(root) {
   // ---- RoomDO sync: this console performs; /output/[room] mirrors ----
   const sync = new OpsSync();
   const syncRoom = new URLSearchParams(location.search).get('room') || 'main-hall';
+
+  // Shared transport clock — the single time authority for every
+  // synchronized visual. The console owns it; outputs derive from it.
+  let transportState = createTransport({ bpm: 96, seed: drawSeed(), nowMs: Date.now() });
+  mod.seed = transportState.seed;
+  const serverNowMs = () => (sync.clock._primed ? sync.serverNow() : Date.now());
+  const positionNow = () => transportPosition(transportState, serverNowMs());
+  // Timestamp-based so a reloaded console keeps outrunning revisions its
+  // previous session (or a hibernated DO snapshot) already published —
+  // receivers gate per-slice on these being strictly monotonic.
+  let visualRevision = Date.now();
+  let mediaRevision = Date.now();
+  let lastVisualSig = '';
+  let publishedMedia = null;
+
+  function currentVisual() {
+    return collectVisual({ state, overlay, captions, mod, revision: 0 });
+  }
+
+  /** Change-only visual publish; the revision stamps only real changes. */
+  function publishVisualIfChanged() {
+    if (!sync.connected) return;
+    const payload = currentVisual();
+    const sig = JSON.stringify(payload);
+    if (sig === lastVisualSig) return;
+    lastVisualSig = sig;
+    payload.revision = ++visualRevision;
+    sync.publishVisual(payload);
+  }
+
+  function retime(changes) {
+    transportState = retimeTransport(transportState, changes, serverNowMs());
+    mod.bpm = transportState.bpm;
+    if (sync.connected) sync.publishTransport(transportState);
+  }
 
   const programCtx = programCanvas.getContext('2d');
   const previewCtx = previewCanvas.getContext('2d');
@@ -248,7 +287,15 @@ export function boot(root) {
       if (p.caption) captions.show(p.caption, nowSec());
       flash(`TAKE — ${p.name || state.A.gen.name} to PROGRAM`);
     }
-    mod.env.trigger();
+    const at = nowSec();
+    mod.trigger(at);
+    if (sync.connected) {
+      // Atomic distributed TAKE: state + envelope hit in one revision.
+      const payload = currentVisual();
+      payload.revision = ++visualRevision;
+      lastVisualSig = JSON.stringify({ ...payload, revision: 0 });
+      sync.takeVisual(payload, at);
+    }
   }
 
   // ------------------------------------------------- XY + FX + mod UI ----
@@ -311,7 +358,7 @@ export function boot(root) {
     taps.push(t);
     if (taps.length >= 2) {
       const iv = (taps[taps.length - 1] - taps[0]) / (taps.length - 1);
-      mod.bpm = Math.round(Math.max(40, Math.min(220, 60000 / iv)));
+      retime({ bpm: Math.round(Math.max(40, Math.min(220, 60000 / iv))) });
       bpmLabel.textContent = `BPM ${mod.bpm}`;
     }
   });
@@ -402,6 +449,7 @@ export function boot(root) {
     overlay.state.alert = null;
     state.emergencyLevel = 0;
     onAir.classList.remove('emergency');
+    if (sync.connected) sync.emergencyOverride({ active: false });
   });
   const emTitle = el('input', 'gc-input'); emTitle.placeholder = 'Alert headline'; emTitle.value = 'Emergency information follows';
   const emLevel = select(
@@ -412,7 +460,18 @@ export function boot(root) {
   lowerWrap.appendChild(emPanel);
 
   function emergencyOverride() {
-    // Instant, unconditional: 26.2 to PROGRAM, alert banner up, captions safe.
+    // Instant, unconditional: 26.2 to PROGRAM, alert banner up, captions
+    // safe. The dedicated EMERGENCY_OVERRIDE command travels independently
+    // of visual state and media, so outputs assert the alert even if
+    // everything else in the payload is broken.
+    if (sync.connected) {
+      sync.emergencyOverride({
+        active: true,
+        level: emLevel.value,
+        title: emTitle.value || 'Emergency information follows',
+        body: 'Watch this channel for instructions in ASL and English.',
+      });
+    }
     const ch = CHANNELS.find((c) => c.id === '26.2');
     loadPresetToPreview(ch.presets[0], ch);
     state.pending.overlay.alert = { level: emLevel.value, title: emTitle.value || 'Emergency information follows', body: 'Watch this channel for instructions in ASL and English.', shownAt: 0 };
@@ -452,9 +511,36 @@ export function boot(root) {
   fileInput.className = 'gc-file';
   fileInput.addEventListener('change', () => { if (fileInput.files[0]) loadMediaFile(fileInput.files[0]); });
   const camSrcBtn = button('CAM AS SOURCE', '', async () => {
-    if (await motion.enable()) { mediaSource = motion.video; camSrcBtn.classList.add('active'); camBtn.classList.add('active'); }
+    if (await motion.enable()) {
+      setLocalMedia(motion.video, false);
+      camSrcBtn.classList.add('active');
+      camBtn.classList.add('active');
+      // Honest descriptor: outputs render their procedural fallback — live
+      // camera distribution needs a real ingest (WebRTC/HLS), never a fake.
+      publishMediaDescriptor({ type: 'camera', id: 'console-camera', revision: ++mediaRevision });
+      flash('CAMERA IS CONSOLE-LOCAL — outputs show fallback (see README for live ingest)');
+    }
   });
-  mediaRow.append(fileInput, camSrcBtn, button('CLEAR SRC', '', () => { mediaSource = null; camSrcBtn.classList.remove('active'); }));
+  const remoteUrlInput = el('input', 'gc-input');
+  remoteUrlInput.placeholder = 'Hosted media URL (same-origin or approved https origin) — Enter';
+  remoteUrlInput.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const url = remoteUrlInput.value.trim();
+    if (!url) return;
+    const isVideo = /\.(mp4|webm|mov|m3u8)(\?|$)/i.test(url);
+    previewFromUrl(url, isVideo);
+    publishMediaDescriptor({
+      id: url, type: isVideo ? 'video' : 'image', url,
+      loop: true, muted: true, fit: 'cover', startedAt: nowSec(), duration: 0,
+      revision: ++mediaRevision,
+    });
+  });
+  mediaRow.append(fileInput, camSrcBtn, button('CLEAR SRC', '', () => {
+    setLocalMedia(null, false);
+    camSrcBtn.classList.remove('active');
+    publishMediaDescriptor(null);
+  }));
+  inPanel.append(remoteUrlInput);
   const meterRow = el('div', 'gc-meters');
   const meters = {
     amp: meter('AUDIO'), energy: meter('MOTION'), raised: meter('RAISED'), spread: meter('SPREAD'),
@@ -464,25 +550,73 @@ export function boot(root) {
   lowerWrap.appendChild(inPanel);
 
   // media sources -----------------------------------------------------
-  let mediaSource = null;   // video element / image canvas fed to u_media
-  function loadMediaFile(file) {
-    const url = URL.createObjectURL(file);
-    if (file.type.startsWith('video')) {
+  let mediaSource = null;          // video element / image canvas fed to u_media
+  let mediaSourceIsStatic = false; // images upload to the GPU once
+  let mediaObjectUrl = null;       // revoke stale blob URLs
+
+  function setLocalMedia(source, isStatic, objectUrl = null) {
+    if (mediaObjectUrl && mediaObjectUrl !== objectUrl) URL.revokeObjectURL(mediaObjectUrl);
+    mediaObjectUrl = objectUrl;
+    mediaSource = source;
+    mediaSourceIsStatic = isStatic;
+  }
+
+  function previewFromUrl(url, isVideo, objectUrl = null) {
+    if (isVideo) {
       const v = document.createElement('video');
+      v.crossOrigin = 'anonymous';
       v.src = url; v.loop = true; v.muted = true; v.playsInline = true;
-      v.play();
-      mediaSource = v;
+      v.play().catch(() => {});
+      setLocalMedia(v, false, objectUrl);
     } else {
       const img = new Image();
+      img.crossOrigin = 'anonymous';
       img.onload = () => {
         const c = document.createElement('canvas');
         c.width = img.width; c.height = img.height;
         c.getContext('2d').drawImage(img, 0, 0);
-        mediaSource = c;
+        setLocalMedia(c, true, objectUrl);
       };
       img.src = url;
     }
+  }
+
+  function publishMediaDescriptor(desc) {
+    publishedMedia = desc;
+    if (sync.connected) sync.publishMedia(desc);
+  }
+
+  async function loadMediaFile(file) {
+    const isVideo = file.type.startsWith('video');
+    const objectUrl = URL.createObjectURL(file);
+    previewFromUrl(objectUrl, isVideo, objectUrl); // console preview is immediate
     flash(`SOURCE ← ${file.name} (archive media stays recognizable)`);
+
+    // Publish once to the media store so every output loads the same asset.
+    try {
+      const res = await fetch(`/api/ops/media?name=${encodeURIComponent(file.name)}`, {
+        method: 'POST',
+        headers: { 'content-type': file.type || 'application/octet-stream' },
+        body: file,
+      });
+      if (res.ok) {
+        const { url } = await res.json();
+        publishMediaDescriptor({
+          id: url, type: isVideo ? 'video' : 'image', url,
+          mimeType: file.type, loop: true, muted: true, fit: 'cover',
+          startedAt: nowSec(), duration: 0, revision: ++mediaRevision,
+        });
+        flash('MEDIA PUBLISHED — outputs are loading it');
+      } else if (res.status === 501) {
+        flash('MEDIA LOCAL ONLY — no R2 bucket bound (see README)');
+      } else if (res.status === 401) {
+        flash('MEDIA UPLOAD UNAUTHORIZED — operator gate');
+      } else {
+        flash('MEDIA UPLOAD FAILED — console-local only');
+      }
+    } catch {
+      if (sync.connected) flash('MEDIA UPLOAD FAILED — console-local only');
+    }
   }
   pgmWrap.addEventListener('dragover', (e) => e.preventDefault());
   pgmWrap.addEventListener('drop', (e) => {
@@ -495,7 +629,9 @@ export function boot(root) {
     setTimeout(() => setFreeze(false), 1400);
   };
   midi.onNote = (note) => {
-    mod.env.trigger();
+    const at = nowSec();
+    mod.trigger(at);
+    if (sync.connected) sync.triggerEnvelope(at);
     const idx = note % 12;              // any octave: C..G launch channels 1..8
     if (idx < 8) selectChannel(CHANNELS[idx].id);
   };
@@ -512,6 +648,9 @@ export function boot(root) {
     safeCanvas.width = a.w; safeCanvas.height = a.h;
     resInd.textContent = `${a.w}×${a.h}`;
     pgmWrap.style.aspectRatio = `${a.w} / ${a.h}`;
+    if (sync.connected && ASPECT_PRESETS[k]) {
+      sync.publishFormat({ aspect: k, width: a.w, height: a.h, fps: 60 });
+    }
   }, '16:9');
   const recBtn = button('● REC', 'gc-rec', () => {
     if (output.recording) { output.stopRecording(); recBtn.classList.remove('active'); recBtn.textContent = '● REC'; }
@@ -525,12 +664,53 @@ export function boot(root) {
   const syncBtn = button('SYNC', '', () => {
     if (sync.connected || sync.ws) { sync.close(); syncBtn.classList.remove('active'); syncBtn.textContent = 'SYNC'; return; }
     sync.onStatus = (s) => { syncBtn.textContent = s; flash(s); };
+    sync.onConnected = () => {
+      // (Re)connect: re-anchor the transport epoch to the server clock and
+      // re-assert every authoritative slice so late joiners land in step.
+      transportState = retimeTransport(transportState, {}, serverNowMs());
+      sync.publishTransport(transportState);
+      const a = ASPECTS[aspectSel.value];
+      if (ASPECT_PRESETS[aspectSel.value]) {
+        sync.publishFormat({ aspect: aspectSel.value, width: a.w, height: a.h, fps: 60 });
+      }
+      if (publishedMedia) sync.publishMedia(publishedMedia);
+      lastVisualSig = '';
+      publishVisualIfChanged();
+    };
     sync.connect(syncRoom);
     syncBtn.classList.add('active');
   });
+  setInterval(publishVisualIfChanged, 300);
+
+  // Live control signals: ≤10 Hz, material-change-only, with a 1.5 s
+  // heartbeat so receivers can distinguish "quiet" from "gone" and decay
+  // stale signals to neutral.
+  let lastControlsSent = null;
+  let lastControlsSentAt = 0;
+  let controlsSeq = 0;
   setInterval(() => {
-    if (sync.connected) sync.publishVisual(collectVisual({ state, overlay, captions, mod }));
-  }, 300);
+    if (!sync.connected) return;
+    const payload = validateControls({
+      audio: { amp: audio.amp, bass: audio.bass, mid: audio.mid, high: audio.high },
+      motion: {
+        energy: motion.energy, x: motion.x, y: motion.y, vx: motion.vx, vy: motion.vy,
+        spread: motion.spread, raised: motion.raised, tempo: motion.tempo,
+      },
+      midi: { note: midi.lastNote, velocity: midi.lastVelocity, cc: { 1: midi.cc[1] ?? 0 } },
+      osc: osc.values.slice(0, 8),
+      xy: state.xy,
+      emergencyLevel: state.emergencyLevel,
+    });
+    const now = performance.now();
+    if (materialChange(payload, lastControlsSent) || now - lastControlsSentAt > 1500) {
+      payload.timestamp = Date.now();
+      controlsSeq = Math.max(controlsSeq + 1, Date.now());
+      payload.sequence = controlsSeq;
+      lastControlsSent = payload;
+      lastControlsSentAt = now;
+      sync.publishControls(payload);
+    }
+  }, 100);
 
   headerBtns.append(
     syncBtn,
@@ -565,21 +745,29 @@ export function boot(root) {
   });
 
   // ------------------------------------------------------ render loop ----
-  const start = performance.now();
-  const nowSec = () => (performance.now() - start) / 1000;
+  // All synchronized timing derives from the shared transport clock, so the
+  // console renders the same musical moment as every /output node. Wall
+  // frame-time is only used for input smoothing (camera motion), which is
+  // console-local by definition.
+  const nowSec = () => positionNow();
   let last = nowSec();
+  let lastReal = performance.now();
   let frames = 0, fpsT = last;
 
   function frame() {
     const t = nowSec();
-    const dt = Math.min(0.1, t - last);
+    const dt = Math.max(0, Math.min(0.1, t - last));
     last = t;
+    const realNow = performance.now();
+    const rdt = Math.min(0.1, (realNow - lastReal) / 1000);
+    lastReal = realNow;
 
     audio.tick();
-    motion.tick(dt);
+    motion.tick(rdt);
     captions.tick(dt, t);
 
-    const offsets = mod.tick(dt, {
+    mod.bpm = transportState.bpm;
+    const offsets = mod.tick(t, {
       audio, motion,
       midi: { lastNote: midi.lastNote, lastVelocity: midi.lastVelocity, cc: midi.cc },
       osc: osc.values,
@@ -606,7 +794,7 @@ export function boot(root) {
       posterize: state.fx.posterize + (offsets['fx.posterize01'] || 0) * 10,
     };
 
-    engine.updateMedia(mediaSource);
+    engine.updateMedia(mediaSource, mediaSourceIsStatic);
     engine.updateWave(audio.wave);
 
     const ctx = { time: t, audio, xy: state.xy, beat: mod.sources['beat.pulse'] || 0 };

@@ -105,6 +105,47 @@ function reduceSingleRoomCommand(state: RoomState, command: Exclude<OpsCommand, 
       return JSON.stringify(state.visual ?? null) === JSON.stringify(command.visual)
         ? state
         : advanceState(state, command.issuedAt, {visual: command.visual})
+    case 'SET_TRANSPORT': {
+      // Transport carries its own monotonic sequence; stale or reordered
+      // transports (reconnect races, duplicate sends) are rejected here so
+      // every surface only ever moves forward in transport history.
+      const incoming = Number((command.transport as {sequence?: unknown}).sequence ?? 0)
+      const current = Number((state.transport as {sequence?: unknown} | null | undefined)?.sequence ?? 0)
+      if (state.transport && incoming <= current) {
+        return state
+      }
+      return advanceState(state, command.issuedAt, {transport: command.transport})
+    }
+    case 'SET_CONTROL_SIGNALS':
+      return JSON.stringify(state.controls ?? null) === JSON.stringify(command.controls)
+        ? state
+        : advanceState(state, command.issuedAt, {controls: command.controls})
+    case 'SET_MEDIA_SOURCE':
+      return JSON.stringify(state.media ?? null) === JSON.stringify(command.media)
+        ? state
+        : advanceState(state, command.issuedAt, {media: command.media})
+    case 'SET_OUTPUT_FORMAT':
+      return JSON.stringify(state.output ?? null) === JSON.stringify(command.output)
+        ? state
+        : advanceState(state, command.issuedAt, {output: command.output})
+    case 'TRIGGER_ENVELOPE':
+      return advanceState(state, command.issuedAt, {
+        visualEvent: {seq: (state.visualEvent?.seq ?? 0) + 1, kind: 'envelope', at: command.at},
+      })
+    case 'TAKE_VISUAL':
+      // Atomic: next visual + the take event land in one revision so no
+      // output can render the new scene without the synchronized trigger.
+      return advanceState(state, command.issuedAt, {
+        visual: command.visual,
+        visualEvent: {seq: (state.visualEvent?.seq ?? 0) + 1, kind: 'take', at: command.at},
+      })
+    case 'EMERGENCY_OVERRIDE': {
+      // Unconditional by design: no equality skip, always a new revision,
+      // stamped with a fresh seq so receivers re-assert the override even
+      // if an identical-looking one is already active.
+      const seq = (Number((state.emergency as {seq?: unknown} | null | undefined)?.seq ?? 0)) + 1
+      return advanceState(state, command.issuedAt, {emergency: {...command.emergency, seq}})
+    }
     case 'SET_SHOW_PHASE': {
       const show = getShowState(state)
       const nextMessage = command.message === undefined ? show.message : command.message

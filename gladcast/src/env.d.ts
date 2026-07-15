@@ -12,4 +12,6 @@ interface Env {
   GLADCAST_ACCESS_AUD?: string
   GLADCAST_OPERATOR_TRUST_ACCESS?: string
   GLADCAST_OPERATOR_GUARD_DISABLED?: string
+  // Optional R2 bucket for published performance media (see worker/media.ts).
+  MEDIA?: import('../worker/media').R2BucketLike
 }

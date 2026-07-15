@@ -15,6 +15,13 @@ export const OPS_COMMAND_TYPES = [
   'SYNC_CLOCK',
   'SET_COBO',
   'SET_VISUAL',
+  'SET_TRANSPORT',
+  'SET_CONTROL_SIGNALS',
+  'SET_MEDIA_SOURCE',
+  'SET_OUTPUT_FORMAT',
+  'TRIGGER_ENVELOPE',
+  'TAKE_VISUAL',
+  'EMERGENCY_OVERRIDE',
   'RUN_MACRO',
   // Showcaller run-of-show commands.
   'SET_SHOW_PHASE',
@@ -103,6 +110,46 @@ export type SetVisualCommand = CommandBase & {
   visual: Record<string, unknown>
 }
 
+export type SetTransportCommand = CommandBase & {
+  type: 'SET_TRANSPORT'
+  transport: Record<string, unknown>
+}
+
+// EPHEMERAL: reduced and broadcast, never persisted (see room-do.ts).
+export type SetControlSignalsCommand = CommandBase & {
+  type: 'SET_CONTROL_SIGNALS'
+  controls: Record<string, unknown>
+}
+
+export type SetMediaSourceCommand = CommandBase & {
+  type: 'SET_MEDIA_SOURCE'
+  media: Record<string, unknown> | null
+}
+
+export type SetOutputFormatCommand = CommandBase & {
+  type: 'SET_OUTPUT_FORMAT'
+  output: Record<string, unknown>
+}
+
+export type TriggerEnvelopeCommand = CommandBase & {
+  type: 'TRIGGER_ENVELOPE'
+  // Transport position (seconds) the trigger applies at.
+  at: number
+}
+
+// Atomic TAKE: the full next visual state plus the transport position it
+// lands at, so state change and envelope hit arrive as one event.
+export type TakeVisualCommand = CommandBase & {
+  type: 'TAKE_VISUAL'
+  visual: Record<string, unknown>
+  at: number
+}
+
+export type EmergencyOverrideCommand = CommandBase & {
+  type: 'EMERGENCY_OVERRIDE'
+  emergency: Record<string, unknown>
+}
+
 export type SetShowPhaseCommand = CommandBase & {
   type: 'SET_SHOW_PHASE'
   phase: ShowPhase
@@ -138,6 +185,13 @@ export type OpsCommand =
   | SyncClockCommand
   | SetCoboCommand
   | SetVisualCommand
+  | SetTransportCommand
+  | SetControlSignalsCommand
+  | SetMediaSourceCommand
+  | SetOutputFormatCommand
+  | TriggerEnvelopeCommand
+  | TakeVisualCommand
+  | EmergencyOverrideCommand
   | RunMacroCommand
   | SetShowPhaseCommand
   | SetSegmentCommand

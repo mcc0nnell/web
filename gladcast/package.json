@@ -9,7 +9,8 @@
     "preview": "astro preview",
     "dev:worker": "astro build && wrangler dev --local-upstream localhost",
     "deploy": "astro build && wrangler deploy",
-    "check": "astro check"
+    "check": "astro check",
+    "test": "vitest run"
   },
   "dependencies": {
     "astro": "^6.4.5"
@@ -18,6 +19,7 @@
     "@astrojs/check": "^0.9.9",
     "@astrojs/cloudflare": "^13.7.0",
     "typescript": "^5.9.3",
-    "wrangler": "^4.99.0"
+    "wrangler": "^4.99.0",
+    "vitest": "^3.2.4"
   }
 }

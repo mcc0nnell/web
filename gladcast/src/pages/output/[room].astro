@@ -1,8 +1,18 @@
 ---
-// GLADcast output surface — a clean render node mirroring one RoomDO room.
-// Fullscreen this on the projector / stage screen, or capture it as an OBS
-// browser source. Read-only: it subscribes to /api/ops/ws and renders the
-// room's `visual` slice; all mutations go through the operator console.
+// GLADcast output surface — a clean, distributed render node for one room.
+//
+// This page is for projectors, LED walls, livestream capture, OBS browser
+// sources, venue screens, and scan converters: no chrome, no status text,
+// no cursor, no scrollbars, no layout shift. It subscribes read-only to
+// /api/ops/ws and renders the room's synchronized state; all mutations go
+// through the operator console.
+//
+// Query parameters:
+//   ?debug=1          diagnostics overlay (connection, revision, transport
+//                     drift, control-signal age, media status, fps/GPU)
+//   ?standby=slate    broadcast standby slate before first sync (default:
+//                     clean black — never an "acquiring signal" message)
+//   ?bg=<css-color>   page background behind the canvas (default black)
 export const prerender = false;
 const { room } = Astro.params;
 ---
@@ -25,16 +35,36 @@ const { room } = Astro.params;
     <div id="gladcast-output"></div>
     <script>
       import { bootOutput } from '../../scripts/gladcast/receiver.js';
-      const room = document.body.dataset.room || 'main-hall';
+      const params = new URLSearchParams(location.search);
+      const debug = params.get('debug') === '1';
+      const bg = params.get('bg');
+      if (bg && /^[a-zA-Z0-9#(),.% -]{1,40}$/.test(bg)) document.body.style.background = bg;
       try {
-        bootOutput(document.getElementById('gladcast-output'), room);
+        bootOutput(document.getElementById('gladcast-output'), {
+          room: document.body.dataset.room || 'main-hall',
+          debug,
+          standby: params.get('standby') === 'slate' ? 'slate' : 'black',
+        });
       } catch (err) {
-        document.body.innerHTML =
-          '<p style="padding:2rem;font-family:monospace;color:#DC2626;">Output could not start: ' +
-          (err && err.message ? err.message : err) +
-          '</p>';
+        // Clean feed stays clean: errors surface only in debug mode.
+        if (debug) {
+          document.body.innerHTML =
+            '<pre style="padding:2rem;font-family:monospace;color:#DC2626;">Output could not start: ' +
+            (err instanceof Error ? err.message : String(err)) +
+            '</pre>';
+        }
         console.error(err);
       }
+
+      // Hide the cursor after 3 s of stillness — venue screens show no pointer.
+      let cursorTimer: number | undefined;
+      const armCursor = () => {
+        document.body.classList.remove('cursor-hidden');
+        clearTimeout(cursorTimer);
+        cursorTimer = setTimeout(() => document.body.classList.add('cursor-hidden'), 3000);
+      };
+      window.addEventListener('mousemove', armCursor);
+      armCursor();
     </script>
     <style>
       html,
@@ -43,6 +73,10 @@ const { room } = Astro.params;
         background: #000;
         height: 100%;
         overflow: hidden;
+      }
+      body.cursor-hidden,
+      body.cursor-hidden * {
+        cursor: none;
       }
       #gladcast-output {
         display: grid;
@@ -53,18 +87,20 @@ const { room } = Astro.params;
         max-width: 100vw;
         max-height: 100vh;
       }
-      .gc-output-status {
+      .gc-output-hud {
         position: fixed;
-        bottom: 12px;
-        right: 16px;
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 11px;
-        letter-spacing: 0.14em;
-        color: #8a93a6;
-        opacity: 0.8;
-      }
-      .gc-output-status.live {
-        color: #34d399;
+        top: 10px;
+        left: 12px;
+        margin: 0;
+        padding: 10px 14px;
+        background: rgba(10, 14, 22, 0.85);
+        border: 1px solid #dc2626;
+        border-radius: 6px;
+        color: #e8ecf1;
+        font: 11px/1.6 'IBM Plex Mono', monospace;
+        letter-spacing: 0.04em;
+        pointer-events: none;
+        white-space: pre;
       }
     </style>
   </body>

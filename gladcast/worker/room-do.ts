@@ -32,6 +32,29 @@ const SNAPSHOT_ROW_ID = 1
 const MAX_EVENT_LOG_SIZE = 50
 const MAX_COBO_PAYLOAD_CHARS = 32_768
 const MAX_VISUAL_PAYLOAD_CHARS = 32_768
+const MAX_CONTROLS_PAYLOAD_CHARS = 4_096
+const MAX_TRANSPORT_PAYLOAD_CHARS = 1_024
+const MAX_MEDIA_PAYLOAD_CHARS = 4_096
+const MAX_OUTPUT_PAYLOAD_CHARS = 1_024
+const MAX_EMERGENCY_PAYLOAD_CHARS = 2_048
+
+function boundedRecord(value: unknown, cap: number, label: string): Record<string, unknown> {
+  if (!isRecord(value)) {
+    throw new Error(`${label} requires a payload object.`)
+  }
+  if (JSON.stringify(value).length > cap) {
+    throw new Error(`${label} payload is too large.`)
+  }
+  return value
+}
+
+function finitePosition(value: unknown, label: string): number {
+  const n = typeof value === 'number' ? value : Number.NaN
+  if (!Number.isFinite(n) || n < 0) {
+    throw new Error(`${label} requires a finite, non-negative transport position.`)
+  }
+  return n
+}
 
 type StoredSnapshotRow = {
   state_json: string
@@ -254,6 +277,33 @@ function parseCommand(input: unknown): OpsCommand {
       }
       return {type, commandId, issuedAt, visual: input.visual}
     }
+    case 'SET_TRANSPORT': {
+      const transport = boundedRecord(input.transport, MAX_TRANSPORT_PAYLOAD_CHARS, 'SET_TRANSPORT')
+      for (const field of ['epochMs', 'positionAtEpoch', 'bpm', 'sequence']) {
+        if (typeof transport[field] !== 'number' || !Number.isFinite(transport[field] as number)) {
+          throw new Error(`SET_TRANSPORT requires numeric ${field}.`)
+        }
+      }
+      return {type, commandId, issuedAt, transport}
+    }
+    case 'SET_CONTROL_SIGNALS':
+      return {type, commandId, issuedAt, controls: boundedRecord(input.controls, MAX_CONTROLS_PAYLOAD_CHARS, 'SET_CONTROL_SIGNALS')}
+    case 'SET_MEDIA_SOURCE': {
+      if (input.media === null) {
+        return {type, commandId, issuedAt, media: null}
+      }
+      return {type, commandId, issuedAt, media: boundedRecord(input.media, MAX_MEDIA_PAYLOAD_CHARS, 'SET_MEDIA_SOURCE')}
+    }
+    case 'SET_OUTPUT_FORMAT':
+      return {type, commandId, issuedAt, output: boundedRecord(input.output, MAX_OUTPUT_PAYLOAD_CHARS, 'SET_OUTPUT_FORMAT')}
+    case 'TRIGGER_ENVELOPE':
+      return {type, commandId, issuedAt, at: finitePosition(input.at, 'TRIGGER_ENVELOPE')}
+    case 'TAKE_VISUAL': {
+      const visual = boundedRecord(input.visual, MAX_VISUAL_PAYLOAD_CHARS, 'TAKE_VISUAL')
+      return {type, commandId, issuedAt, visual, at: finitePosition(input.at, 'TAKE_VISUAL')}
+    }
+    case 'EMERGENCY_OVERRIDE':
+      return {type, commandId, issuedAt, emergency: boundedRecord(input.emergency, MAX_EMERGENCY_PAYLOAD_CHARS, 'EMERGENCY_OVERRIDE')}
     case 'RUN_MACRO':
       if (!isMacroName(input.macro)) {
         throw new Error(`RUN_MACRO requires one of: ${MACRO_NAMES.join(', ')}.`)
@@ -305,7 +355,15 @@ function parseCommand(input: unknown): OpsCommand {
 }
 
 const COMMAND_WINDOW_MS = 1_000
-const COMMAND_LIMIT = 15
+// 30/s per client: live control signals publish at up to 10 Hz alongside
+// visual publishes, transport changes, and instrument events.
+const COMMAND_LIMIT = 30
+
+// Commands that are reduced and broadcast but never persisted: live control
+// signals are ephemeral by nature — losing them on a DO restart is correct
+// (receivers decay to neutral), and skipping the SQL snapshot + event log
+// keeps a 10 Hz control stream from grinding storage.
+const EPHEMERAL_COMMAND_TYPES = new Set<OpsCommand['type']>(['SET_CONTROL_SIGNALS'])
 
 export class RoomDO extends DurableObject {
   private stateCache: RoomState | null = null
@@ -458,7 +516,17 @@ export class RoomDO extends DurableObject {
       nextState = {...nextState, show: {...nextState.show, updatedBy: operator ?? nextState.show.updatedBy}}
     }
 
-    if (changed) {
+    if (changed && EPHEMERAL_COMMAND_TYPES.has(command.type)) {
+      // In-memory only: update the cache and fan out, skip snapshot + log.
+      this.stateCache = nextState
+      this.broadcast({
+        type: 'STATE_PATCH',
+        roomId: nextState.roomId,
+        sentAt,
+        revision: nextState.revision,
+        patch: nextState,
+      })
+    } else if (changed) {
       this.persistSnapshot(nextState)
       this.appendEvent(this.buildDebugEvent(command, nextState, sentAt, operator))
       log.info('command.applied', {
@@ -653,6 +721,20 @@ export class RoomDO extends DurableObject {
         return 'CoBo scoring synced'
       case 'SET_VISUAL':
         return 'GLADcast visual state synced'
+      case 'SET_TRANSPORT':
+        return 'Transport synced'
+      case 'SET_CONTROL_SIGNALS':
+        return 'Control signals synced'
+      case 'SET_MEDIA_SOURCE':
+        return command.media ? 'Media source set' : 'Media source cleared'
+      case 'SET_OUTPUT_FORMAT':
+        return 'Output format synced'
+      case 'TRIGGER_ENVELOPE':
+        return `Envelope trigger @ ${command.at.toFixed(2)}s`
+      case 'TAKE_VISUAL':
+        return `TAKE @ ${command.at.toFixed(2)}s`
+      case 'EMERGENCY_OVERRIDE':
+        return 'EMERGENCY OVERRIDE'
       case 'SET_SHOW_PHASE':
         return `Show phase → ${command.phase.toUpperCase()}`
       case 'SET_SEGMENT':

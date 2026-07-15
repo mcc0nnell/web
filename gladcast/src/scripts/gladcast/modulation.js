@@ -1,94 +1,71 @@
 /**
- * GLADcast modulation system.
+ * GLADcast modulation system — deterministic edition.
  *
- * Any deck parameter can be modulated by any source. Sources are computed
- * once per frame into a flat map; routes apply them with per-route amount,
- * smoothing and optional beat quantization. Base values stay untouched, so
- * releasing a modulation returns the parameter to its performed position.
+ * Every modulation value is a pure function of (seed, transport position,
+ * event list, external control signals). Nothing integrates local frame
+ * time and nothing calls Math.random(), so any two nodes with the same
+ * transport, seed, and events compute identical LFO phases, sequencer
+ * decisions, envelope levels, and "random" values — while the picture
+ * still feels alive.
+ *
+ * Base parameter values stay untouched by routing: releasing a modulation
+ * returns the parameter to its performed position.
  */
+
+import { prand } from './prng.js';
 
 export const LFO_SHAPES = ['sine', 'triangle', 'saw', 'square', 'random'];
 
-export class LFO {
-  constructor(rate = 0.25, shape = 'sine') {
-    this.rate = rate;       // Hz (or cycles-per-beat when synced)
-    this.shape = shape;
-    this.sync = false;      // lock to BPM
-    this.phase = 0;
-    this._rand = Math.random();
-    this._lastCycle = 0;
-  }
-  tick(dt, beatPhase, bpm) {
-    if (this.sync) {
-      this.phase = (beatPhase * this.rate) % 1;
-    } else {
-      this.phase = (this.phase + dt * this.rate) % 1;
-    }
-    const cycle = Math.floor(this.phase * 4);
-    if (this.shape === 'random' && cycle !== this._lastCycle) {
-      this._rand = Math.random();
-      this._lastCycle = cycle;
-    }
-    return this.value();
-  }
-  value() {
-    const p = this.phase;
-    switch (this.shape) {
-      case 'sine': return 0.5 + 0.5 * Math.sin(p * Math.PI * 2);
-      case 'triangle': return p < 0.5 ? p * 2 : 2 - p * 2;
-      case 'saw': return p;
-      case 'square': return p < 0.5 ? 1 : 0;
-      case 'random': return this._rand;
-      default: return 0;
-    }
+/** Pure LFO evaluation. `index` seeds the random shape per-LFO. */
+export function lfoValue(lfo, index, position, bpm, seed) {
+  const rate = Math.max(0, lfo.rate);
+  if (rate === 0) return 0.5;
+  // sync: rate = cycles per beat; free: rate = Hz. Both are pure in position.
+  const cycles = lfo.sync ? (position * bpm / 60) * rate : position * rate;
+  const p = cycles % 1;
+  switch (lfo.shape) {
+    case 'sine': return 0.5 + 0.5 * Math.sin(p * Math.PI * 2);
+    case 'triangle': return p < 0.5 ? p * 2 : 2 - p * 2;
+    case 'saw': return p;
+    case 'square': return p < 0.5 ? 1 : 0;
+    case 'random': return prand(seed, 100 + index, Math.floor(cycles * 4)); // 4 holds/cycle
+    default: return 0;
   }
 }
 
-export class Envelope {
-  constructor(attack = 0.05, release = 0.6) {
-    this.attack = attack;
-    this.release = release;
-    this.level = 0;
-    this._gate = false;
-  }
-  trigger() { this._gate = true; }
-  release_() { this._gate = false; }
-  tick(dt) {
-    if (this._gate) {
-      this.level = Math.min(1, this.level + dt / Math.max(0.005, this.attack));
-      if (this.level >= 1) this._gate = false;
-    } else {
-      this.level = Math.max(0, this.level - dt / Math.max(0.01, this.release));
-    }
-    return this.level;
-  }
+/** Envelope level from the most recent trigger position (pure). */
+export function envelopeLevel(triggerAt, position, attack = 0.05, release = 0.6) {
+  if (triggerAt == null || position < triggerAt) return 0;
+  const e = position - triggerAt;
+  if (e < attack) return e / Math.max(0.005, attack);
+  return Math.max(0, 1 - (e - attack) / Math.max(0.01, release));
 }
 
-export class StepSequencer {
-  constructor(steps = 8) {
-    this.steps = new Array(steps).fill(0).map((_, i) => (i % 2 === 0 ? 1 : 0.25));
-    this.probability = 1;    // chance a step fires at all
-    this.index = 0;
-    this.value = 0;
-    this._lastBeat = -1;
-  }
-  /** Advances one step per beat subdivision (16ths of a bar at 4/4). */
-  tick(barPhase) {
-    const step = Math.floor(barPhase * this.steps.length) % this.steps.length;
-    if (step !== this._lastBeat) {
-      this._lastBeat = step;
-      this.index = step;
-      if (Math.random() <= this.probability) this.value = this.steps[step];
+/**
+ * Step-sequencer value at an absolute step index. Probability decisions are
+ * seeded per absolute step; when a step doesn't fire the previous fired
+ * value holds. The bounded back-scan keeps this pure (no held state), so
+ * receivers landing mid-song still agree.
+ */
+export function seqValueAt(seq, absStep, seed) {
+  const steps = seq.steps;
+  const len = steps.length;
+  if (!len) return 0;
+  for (let back = 0; back < len * 2; back++) {
+    const idx = absStep - back;
+    if (idx < 0) break;
+    if (seq.probability >= 1 || prand(seed, 300, idx) <= seq.probability) {
+      return steps[((idx % len) + len) % len];
     }
-    return this.value;
   }
+  return 0;
 }
 
 /** One modulation route: source key → target key, scaled, smoothed. */
 export class ModRoute {
   constructor(source, target, amount = 0.5) {
-    this.source = source;   // key into the per-frame source map
-    this.target = target;   // e.g. 'A.p1', 'A.intensity', 'fx.trails', 'mix.xfade'
+    this.source = source;
+    this.target = target;   // e.g. 'A.p1', 'fx.trails', 'mix.xfade'
     this.amount = amount;   // -1..1
     this.smooth = 0.15;     // seconds to ~63% — 0 for instant
     this.quantize = 0;      // 0 off, else snap to N levels
@@ -97,7 +74,7 @@ export class ModRoute {
   tick(dt, sources) {
     let v = (sources[this.source] ?? 0) * this.amount;
     if (this.quantize > 0) v = Math.round(v * this.quantize) / this.quantize;
-    if (this.smooth > 0) {
+    if (this.smooth > 0 && dt >= 0) {
       const k = 1 - Math.exp(-dt / this.smooth);
       this._val += (v - this._val) * k;
     } else {
@@ -108,49 +85,68 @@ export class ModRoute {
 }
 
 export class ModEngine {
-  constructor() {
+  constructor(seed = 1) {
+    this.seed = seed >>> 0;
     this.bpm = 96;
-    this.beatPhase = 0;     // 0..1 within one beat
-    this.barPhase = 0;      // 0..1 within a 4-beat bar
-    this.lfo1 = new LFO(0.1, 'sine');
-    this.lfo2 = new LFO(0.5, 'triangle');
-    this.lfo3 = new LFO(2, 'random');
-    this.env = new Envelope();
-    this.seq = new StepSequencer(8);
+    this.lfo1 = { rate: 0.1, shape: 'sine', sync: false };
+    this.lfo2 = { rate: 0.5, shape: 'triangle', sync: false };
+    this.lfo3 = { rate: 2, shape: 'random', sync: false };
+    this.seq = { steps: [1, 0.25, 1, 0.25, 1, 0.25, 1, 0.25], probability: 1 };
+    this.envTriggerAt = null;   // transport position of latest envelope trigger
     this.routes = [];
     this.sources = {};
+    this.position = 0;
+    this._lastPosition = null;
   }
 
-  addRoute(source, target, amount) {
-    const r = new ModRoute(source, target, amount);
-    this.routes.push(r);
-    return r;
+  get lfos() { return [this.lfo1, this.lfo2, this.lfo3]; }
+
+  /** Apply a validated modulation config (schema.js sanitizeModulation). */
+  configure(m) {
+    if (!m) return;
+    if (m.lfos) {
+      this.lfos.forEach((lfo, i) => Object.assign(lfo, m.lfos[i]));
+    }
+    if (m.seq) {
+      this.seq.steps = [...m.seq.steps];
+      this.seq.probability = m.seq.probability;
+    }
   }
 
-  removeRoute(route) {
-    this.routes = this.routes.filter((r) => r !== route);
+  /** Trigger the envelope at a transport position (defaults to "now"). */
+  trigger(atPosition = this.position) {
+    // Keep only the newest trigger; envelopeLevel() is pure in it.
+    if (this.envTriggerAt == null || atPosition >= this.envTriggerAt) {
+      this.envTriggerAt = atPosition;
+    }
   }
 
   /**
-   * Compute all source values for this frame.
-   * external: { audio, motion, midi, osc, caption, xy, weather, emergencyLevel }
+   * Compute all mod sources at a transport position and apply routes.
+   * `external`: { audio, motion, midi, osc, caption, xy, emergencyLevel }.
+   * Returns additive offsets per target.
    */
-  tick(dt, external) {
-    const beatLen = 60 / this.bpm;
-    this.beatPhase = (this.beatPhase + dt / beatLen) % 1;
-    this.barPhase = (this.barPhase + dt / (beatLen * 4)) % 1;
+  tick(position, external) {
+    const dt = this._lastPosition == null ? 0 : Math.max(0, position - this._lastPosition);
+    this._lastPosition = position;
+    this.position = position;
 
+    const bps = this.bpm / 60;
+    const beatFloat = position * bps;
+    const barFloat = beatFloat / 4;
+    const beatPhase = beatFloat % 1;
     const now = new Date();
+
     const s = this.sources;
-    s['lfo1'] = this.lfo1.tick(dt, this.beatPhase, this.bpm);
-    s['lfo2'] = this.lfo2.tick(dt, this.beatPhase, this.bpm);
-    s['lfo3'] = this.lfo3.tick(dt, this.beatPhase, this.bpm);
-    s['env'] = this.env.tick(dt);
-    s['seq'] = this.seq.tick(this.barPhase);
-    s['beat'] = this.beatPhase;
-    s['beat.pulse'] = Math.pow(1 - this.beatPhase, 4);
-    s['bar'] = this.barPhase;
-    s['random'] = Math.random();
+    s['lfo1'] = lfoValue(this.lfo1, 0, position, this.bpm, this.seed);
+    s['lfo2'] = lfoValue(this.lfo2, 1, position, this.bpm, this.seed);
+    s['lfo3'] = lfoValue(this.lfo3, 2, position, this.bpm, this.seed);
+    s['env'] = envelopeLevel(this.envTriggerAt, position);
+    s['seq'] = seqValueAt(this.seq, Math.floor(barFloat * this.seq.steps.length), this.seed);
+    s['beat'] = beatPhase;
+    s['beat.pulse'] = Math.pow(1 - beatPhase, 4);
+    s['bar'] = barFloat % 1;
+    s['random'] = prand(this.seed, 200, Math.floor(position * 6)); // shared "alive" noise
     s['time.day'] = (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) / 86400;
     s['time.sin'] = 0.5 + 0.5 * Math.sin(s['time.day'] * Math.PI * 2);
 
@@ -168,9 +164,9 @@ export class ModEngine {
     s['motion.raised'] = external.motion.raised;
     s['motion.tempo'] = external.motion.tempo;
 
-    s['midi.note'] = external.midi.lastNote / 127;
-    s['midi.velocity'] = external.midi.lastVelocity / 127;
-    s['midi.cc1'] = external.midi.cc[1] ?? 0;
+    s['midi.note'] = (external.midi.lastNote ?? external.midi.note ?? 0) / 127;
+    s['midi.velocity'] = (external.midi.lastVelocity ?? external.midi.velocity ?? 0) / 127;
+    s['midi.cc1'] = external.midi.cc?.[1] ?? 0;
     s['osc.1'] = external.osc[0] ?? 0;
     s['osc.2'] = external.osc[1] ?? 0;
 
@@ -180,12 +176,21 @@ export class ModEngine {
     s['xy.y'] = external.xy.y;
     s['emergency'] = external.emergencyLevel;
 
-    // Apply routes → additive offsets per target.
     const offsets = {};
     for (const r of this.routes) {
       offsets[r.target] = (offsets[r.target] ?? 0) + r.tick(dt, s);
     }
     return offsets;
+  }
+
+  addRoute(source, target, amount) {
+    const r = new ModRoute(source, target, amount);
+    this.routes.push(r);
+    return r;
+  }
+
+  removeRoute(route) {
+    this.routes = this.routes.filter((r) => r !== route);
   }
 }
 

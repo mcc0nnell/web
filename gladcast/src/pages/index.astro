@@ -37,12 +37,15 @@ import '../styles/gladcast.css';
       import { boot } from '../scripts/gladcast/main.js';
       const root = document.getElementById('gladcast-root');
       try {
+        if (!root) throw new Error('missing mount point');
         boot(root);
       } catch (err) {
-        root.innerHTML =
-          '<p style="padding:2rem;font-family:monospace;color:#DC2626;">GLADcast could not start: ' +
-          (err && err.message ? err.message : err) +
-          '<br>WebGL2 is required.</p>';
+        if (root) {
+          root.innerHTML =
+            '<p style="padding:2rem;font-family:monospace;color:#DC2626;">GLADcast could not start: ' +
+            (err instanceof Error ? err.message : String(err)) +
+            '<br>WebGL2 is required.</p>';
+        }
         console.error(err);
       }
     </script>

@@ -1,4 +1,5 @@
 import {routeOpsRequest} from './router'
+import {routeMediaRequest} from './media'
 import {RoomDO} from './room-do'
 import {applySecurityHeaders, handleCorsPreflightIfNeeded} from './headers'
 
@@ -15,7 +16,9 @@ export function withOpsRouter(next: (request: Request, env: Env, context: unknow
         return preflight
       }
 
-      const response = await routeOpsRequest(request, env as never, context, next)
+      const response = await routeMediaRequest(request, env, context, (mediaReq, mediaEnv, mediaContext) =>
+        routeOpsRequest(mediaReq, mediaEnv as never, mediaContext, next),
+      )
       return applySecurityHeaders(response)
     },
   }

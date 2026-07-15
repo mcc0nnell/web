@@ -27,6 +27,15 @@
     // "GLADCAST_ACCESS_AUD": "<application-audience-tag>",
     // "GLADCAST_OPERATOR_TOKEN": "<shared token for header/cookie auth>"
   },
+  // Published performance media (images/video referenced by synchronized
+  // media descriptors). Provision once: `wrangler r2 bucket create gladcast-media`.
+  // wrangler dev simulates this bucket locally with no cloud setup.
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "gladcast-media"
+    }
+  ],
   "durable_objects": {
     "bindings": [
       {
