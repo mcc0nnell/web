@@ -44,19 +44,28 @@ const SOURCES = [
     url: 'https://www.publicmediaventure.com/_files/ugd/9cc034_271e15dae0e7495bb407adff86ff7fa1.pdf',
     d: ['language', 'tech', 'institutional'],
   },
+  {
+    id: 37,
+    cat: 'International policy',
+    auth: 'WFD & WASLI (2015)',
+    title: 'Communication during Natural Disasters and Other Mass Emergencies for Deaf People Who Use Signed Language',
+    find: 'UNCRPD-mapped recommendations call for emergency systems to plan direct, timely, signed, accessible, and two-way communication before disasters occur, using professional interpreters, visual and captioned media, relay services, accessible technology, and universal design rather than transferring access work to Deaf people and their informal networks.',
+    url: 'https://wfdeaf.org/news/wfd-and-wasli-statement-communication-during-natural-disasters-and-other-mass-emergencies-for-deaf-people-who-use-signed-language/',
+    d: ['delay', 'language', 'repair', 'informal', 'tech', 'institutional', 'action'],
+  },
 ];
 
 const COUNTS = {
-  delay: 9,
+  delay: 10,
   search: 6,
   verify: 4,
-  language: 18,
-  repair: 9,
-  informal: 5,
-  tech: 7,
+  language: 19,
+  repair: 10,
+  informal: 6,
+  tech: 8,
   trust: 6,
-  institutional: 16,
-  action: 10,
+  institutional: 17,
+  action: 11,
   framework: 9,
 };
 
@@ -148,8 +157,8 @@ const CLIENT_PATCH = `
   });
 
   const matrixCounts = {
-    'D-01': 9, 'D-02': 6, 'D-03': 4, 'D-04': 18, 'D-05': 9,
-    'D-06': 5, 'D-07': 7, 'D-08': 6, 'D-09': 16, 'D-10': 10, FWK: 9,
+    'D-01': 10, 'D-02': 6, 'D-03': 4, 'D-04': 19, 'D-05': 10,
+    'D-06': 6, 'D-07': 8, 'D-08': 6, 'D-09': 17, 'D-10': 11, FWK: 9,
   };
   document.querySelectorAll('.mrow').forEach(row => {
     const code = row.querySelector('.m-code')?.textContent.trim();
@@ -173,10 +182,14 @@ export async function onRequest(context) {
 
   let html = await response.text();
   html = html
-    .replaceAll('31 sources', '36 sources')
-    .replaceAll('data-to="31">31', 'data-to="36">36')
-    .replaceAll('<div class="n">31</div><div class="l">Sources synthesized</div>', '<div class="n">36</div><div class="l">Sources synthesized</div>')
-    .replaceAll('<p class="n">31</p><p class="l">Sources synthesized</p>', '<p class="n">36</p><p class="l">Sources synthesized</p>')
+    .replaceAll('31 sources', '37 sources')
+    .replaceAll('36 sources', '37 sources')
+    .replaceAll('data-to="31">31', 'data-to="37">37')
+    .replaceAll('data-to="36">36', 'data-to="37">37')
+    .replaceAll('<div class="n">31</div><div class="l">Sources synthesized</div>', '<div class="n">37</div><div class="l">Sources synthesized</div>')
+    .replaceAll('<div class="n">36</div><div class="l">Sources synthesized</div>', '<div class="n">37</div><div class="l">Sources synthesized</div>')
+    .replaceAll('<p class="n">31</p><p class="l">Sources synthesized</p>', '<p class="n">37</p><p class="l">Sources synthesized</p>')
+    .replaceAll('<p class="n">36</p><p class="l">Sources synthesized</p>', '<p class="n">37</p><p class="l">Sources synthesized</p>')
     .replaceAll('The Invisible Labor of Video Relay Service Access', 'Video Relay Service Interpreters: Intricacies of Sign Language Access')
     .replaceAll('<h3>Video Relay Service Interpreters</h3>', '<h3>Video Relay Service Interpreters: Intricacies of Sign Language Access</h3>');
 
