@@ -175,6 +175,8 @@ export async function onRequest(context) {
   html = html
     .replaceAll('31 sources', '36 sources')
     .replaceAll('data-to="31">31', 'data-to="36">36')
+    .replaceAll('<div class="n">31</div><div class="l">Sources synthesized</div>', '<div class="n">36</div><div class="l">Sources synthesized</div>')
+    .replaceAll('<p class="n">31</p><p class="l">Sources synthesized</p>', '<p class="n">36</p><p class="l">Sources synthesized</p>')
     .replaceAll('The Invisible Labor of Video Relay Service Access', 'Video Relay Service Interpreters: Intricacies of Sign Language Access')
     .replaceAll('<h3>Video Relay Service Interpreters</h3>', '<h3>Video Relay Service Interpreters: Intricacies of Sign Language Access</h3>');
 
